@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1059698955611",
+    "project_id": "roadpro-8e332",
+    "storage_bucket": "roadpro-8e332.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1059698955611:android:51c0f38044c12eed7a367e",
+        "android_client_info": {
+          "package_name": "com.example.roadpro"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBhDqnXgCRpO-7Q1Nye8Z9EJCcYUgS_ZFw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

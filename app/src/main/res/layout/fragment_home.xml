@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/turquoise"
+    tools:context=".HomeFragment">
+
+    <!-- TODO: Update blank fragment layout -->
+
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <ScrollView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical" >
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/gradient_photobackground"
+                    android:layout_marginTop="0px">
+
+
+                    <ImageView
+                        android:id="@+id/imageView"
+                        android:layout_width="0dp"
+                        android:layout_height="0dp"
+                        android:maxHeight="150dp"
+                        android:maxWidth="150dp"
+                        android:layout_marginTop="75dp"
+                        android:background="@drawable/rounded_image"
+                        android:clipToOutline="true"
+                        android:src="@drawable/default_avatar"
+                        app:layout_constraintHeight_max="150dp"
+                        app:layout_constraintWidth_max="150dp"
+                        app:layout_constraintDimensionRatio="1:1"
+                        android:scaleType="centerCrop"
+                        android:adjustViewBounds="true"
+                        app:layout_constraintCircleRadius="50dp"
+                        app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintStart_toStartOf="parent"
+                        app:layout_constraintTop_toTopOf="parent" />
+
+                    <TextView
+                        android:id="@+id/Name"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:text="Imie i nazwisko"
+                        android:textColor="@color/black"
+                        android:textSize="32sp"
+                        android:textStyle="bold"
+                        app:layout_constraintEnd_toEndOf="@+id/imageView"
+                        app:layout_constraintStart_toStartOf="@+id/imageView"
+                        app:layout_constraintTop_toBottomOf="@+id/imageView" />
+
+                    <TextView
+                        android:id="@+id/emailEt"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="example@gmail.com"
+                        android:textColor="@color/light_gray"
+                        android:textSize="20sp"
+                        app:layout_constraintEnd_toEndOf="@+id/Name"
+                        app:layout_constraintStart_toStartOf="@+id/Name"
+                        app:layout_constraintTop_toBottomOf="@+id/Name" />
+
+                    <LinearLayout
+                        android:id="@+id/linearLayout2"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        app:layout_constraintTop_toBottomOf="@+id/emailEt">
+
+                        <androidx.appcompat.widget.AppCompatButton
+                            android:id="@+id/button2"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="32dp"
+                            android:layout_marginTop="10dp"
+                            android:layout_marginEnd="32dp"
+                            android:layout_marginBottom="10dp"
+                            android:drawableStart="@drawable/baseline_settings_24"
+                            android:text="ACCOUNT SETTINGS" />
+                    </LinearLayout>
+
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+                <androidx.constraintlayout.widget.ConstraintLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent">
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:orientation="vertical"
+                        app:layout_constraintTop_toTopOf="parent"
+                        android:layout_marginTop="30dp">
+
+                        <TextView
+                            android:id="@+id/textView5"
+                            android:layout_width="match_parent"
+
+                            android:layout_height="wrap_content"
+                            android:text="Kategorie kierowcy"
+                            android:textSize="26dp" />
+
+                        <TextView
+                            android:id="@+id/textView6"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="Lata doświadczenia"
+                            android:textSize="26dp" />
+
+                        <TextView
+                            android:id="@+id/textView7"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="jeszcze nwm"
+                            android:textSize="26dp" />
+
+                        <TextView
+                            android:id="@+id/textView4"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="nwm"
+                            android:textSize="26dp" />
+                    </LinearLayout>
+                </androidx.constraintlayout.widget.ConstraintLayout>
+
+            </LinearLayout>
+        </ScrollView>
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</FrameLayout>
