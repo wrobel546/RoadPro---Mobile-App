@@ -1,12 +1,11 @@
 package com.example.roadpro
 
-import android.graphics.Color
 import android.os.Bundle
-import android.widget.Toast
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
+import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.example.roadpro.databinding.FragmentCalendarBinding
 import com.google.firebase.auth.FirebaseAuth
@@ -19,10 +18,7 @@ class CalendarFragment : Fragment() {
 
     private val eventList = mutableListOf<Event>()
     private lateinit var eventAdapter: EventAdapter
-    private val db = FirebaseFirestore.getInstance() // Inicjalizowanie Firestore
-
-    private val eventDates = mutableListOf<String>()
-
+    private val db = FirebaseFirestore.getInstance()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -35,11 +31,14 @@ class CalendarFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-        eventAdapter = EventAdapter(eventList)
+        eventAdapter = EventAdapter(eventList.toMutableList()) { eventToDelete ->
+            confirmAndDeleteEvent(eventToDelete)
+        }
+
+
         binding.eventsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.eventsRecyclerView.adapter = eventAdapter
 
-        // Ładuj wydarzenia tylko dla zalogowanego użytkownika
         loadEventsFromFirestore()
 
         binding.calendarView.setOnDateChangeListener { _, year, month, day ->
@@ -49,60 +48,56 @@ class CalendarFragment : Fragment() {
         }
     }
 
-    // Metoda do wywołania z MainActivity
     fun showAddEventDialog() {
         val addEventDialog = AddEventDialog()
         addEventDialog.setListener(object : AddEventDialog.AddEventDialogListener {
             override fun onEventAdded(eventName: String, location: String, startDate: String, endDate: String) {
                 val event = Event(eventName, location, startDate, endDate)
-                saveEventToFirestore(event) // Zapisz wydarzenie w Firestore
+                saveEventToFirestore(event)
                 eventList.add(event)
-                eventAdapter.notifyDataSetChanged()
+                eventAdapter.updateList(eventList)
             }
         })
         addEventDialog.show(parentFragmentManager, "AddEventDialog")
     }
 
-    // Metoda zapisywania wydarzenia do Firestore
     private fun saveEventToFirestore(event: Event) {
-        val user = FirebaseAuth.getInstance().currentUser
-        val userId = user?.uid ?: return // Jeśli użytkownik nie jest zalogowany, nie zapisuj
+        val user = FirebaseAuth.getInstance().currentUser ?: return
+        val eventRef = db.collection("events").document()
 
-        val eventRef = db.collection("events").document() // Nowy dokument w kolekcji "events"
-        eventRef.set(
-            hashMapOf(
-                "userId" to userId, // Zapisz ID użytkownika
-                "name" to event.name,
-                "location" to event.location,
-                "startDate" to event.startDate,
-                "endDate" to event.endDate
-            )
-        ).addOnSuccessListener {
-            Toast.makeText(requireContext(), "Wydarzenie zapisane w bazie!", Toast.LENGTH_SHORT).show()
-        }.addOnFailureListener { exception ->
-            Toast.makeText(requireContext(), "Błąd zapisu: ${exception.message}", Toast.LENGTH_SHORT).show()
-        }
+        val data = hashMapOf(
+            "userId" to user.uid,
+            "name" to event.name,
+            "location" to event.location,
+            "startDate" to event.startDate,
+            "endDate" to event.endDate
+        )
+
+        eventRef.set(data)
+            .addOnSuccessListener {
+                Toast.makeText(requireContext(), "Wydarzenie zapisane!", Toast.LENGTH_SHORT).show()
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(requireContext(), "Błąd zapisu: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
     }
 
-    // Ładowanie wydarzeń tylko dla zalogowanego użytkownika
     private fun loadEventsFromFirestore() {
-        val user = FirebaseAuth.getInstance().currentUser
-        val userId = user?.uid ?: return // Jeśli użytkownik nie jest zalogowany, nic nie ładuj
+        val user = FirebaseAuth.getInstance().currentUser ?: return
 
         db.collection("events")
-            .whereEqualTo("userId", userId) // Filtrowanie po ID użytkownika
+            .whereEqualTo("userId", user.uid)
             .get()
             .addOnSuccessListener { result ->
-                eventList.clear() // Wyczyszczenie listy
+                eventList.clear()
                 for (document in result) {
                     val event = document.toObject(Event::class.java)
                     eventList.add(event)
                 }
-                eventAdapter.notifyDataSetChanged()
-
+                eventAdapter.updateList(eventList)
             }
-            .addOnFailureListener { exception ->
-                Toast.makeText(requireContext(), "Błąd ładowania wydarzeń: ${exception.message}", Toast.LENGTH_SHORT).show()
+            .addOnFailureListener { e ->
+                Toast.makeText(requireContext(), "Błąd ładowania: ${e.message}", Toast.LENGTH_SHORT).show()
             }
     }
 
@@ -111,12 +106,54 @@ class CalendarFragment : Fragment() {
         eventAdapter.updateList(filteredEvents)
     }
 
+    private fun confirmAndDeleteEvent(event: Event) {
+        val builder = androidx.appcompat.app.AlertDialog.Builder(requireContext())
+        builder.setTitle("Potwierdzenie")
+        builder.setMessage("Czy na pewno chcesz usunąć to wydarzenie?")
+
+        builder.setPositiveButton("Usuń") { _, _ ->
+            deleteEventFromFirestore(event)
+        }
+
+        builder.setNegativeButton("Anuluj") { dialog, _ ->
+            dialog.dismiss()
+        }
+
+        builder.create().show()
+    }
+
+
+
+    private fun deleteEventFromFirestore(event: Event) {
+        val user = FirebaseAuth.getInstance().currentUser ?: return
+
+        db.collection("events")
+            .whereEqualTo("userId", user.uid)
+            .whereEqualTo("name", event.name)
+            .whereEqualTo("startDate", event.startDate)
+            .whereEqualTo("endDate", event.endDate)
+            .get()
+            .addOnSuccessListener { result ->
+                for (document in result) {
+                    db.collection("events").document(document.id)
+                        .delete()
+                        .addOnSuccessListener {
+                            Toast.makeText(requireContext(), "Usunięto wydarzenie", Toast.LENGTH_SHORT).show()
+                            eventList.remove(event)
+                            eventAdapter.updateList(eventList)
+                        }
+                        .addOnFailureListener {
+                            Toast.makeText(requireContext(), "Błąd usuwania", Toast.LENGTH_SHORT).show()
+                        }
+                }
+            }
+            .addOnFailureListener {
+                Toast.makeText(requireContext(), "Nie znaleziono wydarzenia", Toast.LENGTH_SHORT).show()
+            }
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
     }
-
-
 }
-
-

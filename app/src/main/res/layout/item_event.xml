@@ -5,20 +5,74 @@
     android:orientation="vertical"
     android:padding="8dp">
 
-    <TextView
-        android:id="@+id/eventNameTextView"
+    <!-- Nazwa wydarzenia i lokalizacja w jednej linii -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Nazwa wydarzenia"
-        android:textSize="18sp"
-        android:textStyle="bold" />
+        android:orientation="horizontal"
+        android:weightSum="2">
 
-    <TextView
-        android:id="@+id/eventLocationTextView"
+        <TextView
+            android:id="@+id/eventNameTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Nazwa wydarzenia"
+            android:textSize="18sp"
+            android:textStyle="bold"
+            android:gravity="start" />
+
+        <TextView
+            android:id="@+id/eventLocationTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Lokalizacja"
+            android:textColor="@android:color/black"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:gravity="end" />
+    </LinearLayout>
+
+    <!-- Data rozpoczęcia i zakończenia -->
+    <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Lokalizacja"
-        android:textSize="14sp"
-        android:textColor="@android:color/darker_gray" />
+        android:orientation="horizontal"
+        android:layout_marginTop="4dp"
+        android:weightSum="2">
 
+        <TextView
+            android:id="@+id/eventFrom"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Od kiedy"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            android:gravity="start" />
+
+        <TextView
+            android:id="@+id/eventTo"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Do kiedy"
+            android:textColor="@android:color/black"
+            android:textSize="14sp"
+            android:gravity="end" />
+    </LinearLayout>
+
+    <!-- Przycisk usuwania -->
+    <Button
+        android:id="@+id/deleteButton"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Usuń"
+        android:textColor="@android:color/white"
+        android:backgroundTint="@android:color/holo_red_light"
+        android:layout_gravity="end"
+        android:layout_marginTop="8dp"
+        android:minWidth="0dp"
+        android:minHeight="0dp" />
 </LinearLayout>
