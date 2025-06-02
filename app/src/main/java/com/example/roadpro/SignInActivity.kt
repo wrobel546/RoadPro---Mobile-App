@@ -3,6 +3,8 @@ package com.example.roadpro
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
+import android.widget.EditText
+import android.widget.Button
 import android.widget.Toast
 import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
@@ -18,6 +20,7 @@ import com.google.android.gms.auth.api.signin.GoogleSignInOptions
 import com.google.android.gms.common.api.Api.ApiOptions.HasGoogleSignInAccountOptions
 import com.google.android.libraries.identity.googleid.GetGoogleIdOption
 import com.google.firebase.auth.FirebaseAuth
+import android.app.AlertDialog
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -35,7 +38,7 @@ class SignInActivity : AppCompatActivity() {
         setContentView(binding.root)
 
         firebaseAuth = FirebaseAuth.getInstance()
-        googleAuthClient = GoogleAuthClient(applicationContext)
+        googleAuthClient = GoogleAuthClient(this)
 
 
         binding.textView.setOnClickListener{
@@ -74,6 +77,11 @@ class SignInActivity : AppCompatActivity() {
             }
         }
 
+        val forgotPasswordBtn = findViewById<Button>(R.id.forgotPasswordBtn)
+        forgotPasswordBtn.setOnClickListener {
+            showResetPasswordDialog()
+        }
+
         enableEdgeToEdge()
 
         ViewCompat.setOnApplyWindowInsetsListener(binding.root) { v, insets ->
@@ -88,7 +96,30 @@ class SignInActivity : AppCompatActivity() {
         finish()
     }
 
-
+    private fun showResetPasswordDialog() {
+        val emailEdit = EditText(this)
+        emailEdit.hint = "Podaj swój email"
+        AlertDialog.Builder(this)
+            .setTitle("Resetowanie hasła")
+            .setMessage("Podaj adres email, na który wyślemy link do zmiany hasła.")
+            .setView(emailEdit)
+            .setPositiveButton("Wyślij") { _, _ ->
+                val email = emailEdit.text.toString()
+                if (email.isNotBlank()) {
+                    FirebaseAuth.getInstance().sendPasswordResetEmail(email)
+                        .addOnSuccessListener {
+                            Toast.makeText(this, "Wysłano email do resetowania hasła", Toast.LENGTH_LONG).show()
+                        }
+                        .addOnFailureListener {
+                            Toast.makeText(this, "Błąd: ${it.message}", Toast.LENGTH_LONG).show()
+                        }
+                } else {
+                    Toast.makeText(this, "Podaj adres email", Toast.LENGTH_SHORT).show()
+                }
+            }
+            .setNegativeButton("Anuluj", null)
+            .show()
+    }
 
     override fun onStart() {
         super.onStart()

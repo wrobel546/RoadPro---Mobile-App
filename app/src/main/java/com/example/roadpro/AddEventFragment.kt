@@ -1,12 +1,22 @@
 package com.example.roadpro
 
+import android.app.Activity
 import android.app.DatePickerDialog
 import android.app.Dialog
+import android.content.Intent
 import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.DialogFragment
+import androidx.fragment.app.Fragment
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.widget.Autocomplete
+import com.google.android.libraries.places.widget.model.AutocompleteActivityMode
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.util.Calendar
 
@@ -88,5 +98,44 @@ class AddEventDialog : DialogFragment() {
         )
 
         datePickerDialog.show()
+    }
+}
+
+class AddEventFragment : Fragment() {
+
+    private lateinit var locationEditText: EditText
+    private val AUTOCOMPLETE_REQUEST_CODE = 1001
+
+    override fun onCreateView(
+        inflater: LayoutInflater, container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val view = inflater.inflate(R.layout.fragment_add_event, container, false)
+        locationEditText = view.findViewById(R.id.locationEditText)
+        return view
+    }
+
+    override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        super.onViewCreated(view, savedInstanceState)
+        // Inicjalizacja Places tylko raz w aplikacji (np. w MainActivity lub Application)
+        if (!Places.isInitialized()) {
+            Places.initialize(requireContext().applicationContext, "TU_WSTAW_SWÓJ_KLUCZ_API")
+        }
+
+        locationEditText.isFocusable = false
+        locationEditText.setOnClickListener {
+            val fields = listOf(Place.Field.ID, Place.Field.NAME, Place.Field.ADDRESS)
+            val intent = Autocomplete.IntentBuilder(AutocompleteActivityMode.OVERLAY, fields)
+                .build(requireContext())
+            startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE)
+        }
+    }
+
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == AUTOCOMPLETE_REQUEST_CODE && resultCode == Activity.RESULT_OK && data != null) {
+            val place = Autocomplete.getPlaceFromIntent(data)
+            locationEditText.setText(place.address)
+        }
     }
 }

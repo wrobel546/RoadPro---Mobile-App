@@ -58,6 +58,18 @@
 
     </com.google.android.material.textfield.TextInputLayout>
 
+    <Button
+        android:id="@+id/forgotPasswordBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Zapomniałeś hasła?"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="8dp"
+        android:backgroundTint="@color/gray"
+        android:textColor="@android:color/white"
+        app:layout_constraintTop_toBottomOf="@+id/passwordLayout"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"/>
 
     <com.google.android.gms.common.SignInButton
         android:id="@+id/g_SignIn"
@@ -67,7 +79,7 @@
         android:layout_marginTop="16dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/passwordLayout" />
+        app:layout_constraintTop_toBottomOf="@+id/forgotPasswordBtn" />
 
     <androidx.appcompat.widget.AppCompatButton
         android:id="@+id/button"
@@ -82,7 +94,7 @@
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintHorizontal_bias="0.5"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@+id/passwordLayout" />
+        app:layout_constraintTop_toBottomOf="@+id/g_SignIn" />
 
     <TextView
         android:id="@+id/textView"

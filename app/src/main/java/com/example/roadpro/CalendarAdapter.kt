@@ -12,6 +12,8 @@ class CalendarAdapter(
     private val onDaySelected: (String) -> Unit
 ) : RecyclerView.Adapter<CalendarAdapter.CalendarViewHolder>() {
 
+    var eventColors: Map<String, Int> = emptyMap() // data: date -> color
+
     // ViewHolder class for calendar days
     inner class CalendarViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
         val dayText: TextView = itemView.findViewById(R.id.dayText)
@@ -30,11 +32,18 @@ class CalendarAdapter(
         // Ustaw datę dnia
         holder.dayText.text = calendarDay.date.split("-")[2] // dzień (np. 1, 2, 3, itd.)
 
-        // Ustaw tło w zależności od tego, czy dzień jest wybrany
-        if (calendarDay.isSelected) {
-            holder.dayContainer.setBackgroundResource(R.drawable.bg_selected) // lub inny sposób podświetlenia
+        // Zawsze ustawiamy zaokrąglone tło
+        holder.dayContainer.setBackgroundResource(R.drawable.bg_default)
+
+        // Jeśli jest wyjazd tego dnia, nakładamy pastelowy kolor jako tint
+        val color = eventColors[calendarDay.date]
+        if (color != null) {
+            holder.dayContainer.background.setTint(color)
+        } else if (calendarDay.isSelected) {
+            // Jeśli zaznaczony, możesz nałożyć np. ramkę lub inny efekt, ale tło zostaje zaokrąglone
+            holder.dayContainer.background.setTint(0xFFE0E0E0.toInt()) // lub inny stonowany kolor
         } else {
-            holder.dayContainer.setBackgroundResource(R.drawable.bg_default)
+            holder.dayContainer.background.setTintList(null)
         }
 
         // Kliknięcie na dzień

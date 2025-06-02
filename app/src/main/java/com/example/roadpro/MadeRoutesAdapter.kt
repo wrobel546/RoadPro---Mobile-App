@@ -1,0 +1,130 @@
+package com.example.roadpro
+
+import android.app.AlertDialog
+import android.content.Intent
+import android.net.Uri
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ImageButton
+import android.widget.LinearLayout
+import android.widget.TextView
+import android.widget.Toast
+import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.firestore.FirebaseFirestore
+
+class MadeRoutesAdapter(
+    private var events: MutableList<Event>,
+    private val onSettingsClicked: (Event) -> Unit,
+    private val onMoneyClicked: (Event) -> Unit,
+    function: () -> Unit
+) : RecyclerView.Adapter<MadeRoutesAdapter.ViewHolder>() {
+
+    inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+        val eventName: TextView = view.findViewById(R.id.eventNameTextView)
+        val eventLocation: TextView = view.findViewById(R.id.eventLocationTextView)
+        val eventFrom: TextView = view.findViewById(R.id.eventFrom)
+        val eventTo: TextView = view.findViewById(R.id.eventTo)
+        val settingsButton: ImageButton = view.findViewById(R.id.settingsButton)
+        val moneyButton: ImageButton = view.findViewById(R.id.moneyButton)
+        val routeButton: Button = view.findViewById(R.id.routeButton)
+        val doneButton: Button = view.findViewById(R.id.doneButton)
+        val paymentContainer: LinearLayout = view.findViewById(R.id.paymentContainer)
+        val paymentValue: TextView = view.findViewById(R.id.paymentValue)
+        val editPaymentButton: ImageButton = view.findViewById(R.id.editPaymentButton)
+    }
+
+    override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+        val view = LayoutInflater.from(parent.context).inflate(R.layout.item_made_route, parent, false)
+        return ViewHolder(view)
+    }
+
+    override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+        val event = events[position]
+        holder.eventName.text = event.name
+        holder.eventLocation.text = "Lokalizacja: ${event.location}"
+        holder.eventFrom.text = "Od: ${event.startDate}"
+        holder.eventTo.text = "Do: ${event.endDate}"
+
+        holder.settingsButton.setOnClickListener {
+            onSettingsClicked(event)
+        }
+        holder.moneyButton.setOnClickListener {
+            onMoneyClicked(event)
+        }
+        holder.routeButton.setOnClickListener {
+            val destination = event.location
+            val uri = "https://www.google.com/maps/dir/?api=1&destination=${Uri.encode(destination)}&travelmode=driving"
+            val intent = Intent(Intent.ACTION_VIEW, Uri.parse(uri))
+            intent.setPackage("com.google.android.apps.maps")
+            if (intent.resolveActivity(holder.itemView.context.packageManager) != null) {
+                holder.itemView.context.startActivity(intent)
+            } else {
+                Toast.makeText(holder.itemView.context, "Brak aplikacji Google Maps", Toast.LENGTH_SHORT).show()
+            }
+        }
+
+        // Popraw: sprawdzanie i ustawianie przycisku "Zrealizowana!"
+        if (event.done == 1) {
+            holder.doneButton.visibility = View.GONE
+            holder.paymentContainer.visibility = View.VISIBLE
+            holder.paymentValue.text = "%.2f zł".format(event.payment ?: 0.0)
+            holder.editPaymentButton.setOnClickListener {
+                val context = holder.itemView.context
+                val input = EditText(context)
+                input.inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
+                input.setText((event.payment ?: 0.0).toString())
+                AlertDialog.Builder(context)
+                    .setTitle("Edytuj kwotę za przejazd")
+                    .setView(input)
+                    .setPositiveButton("Zapisz") { _, _ ->
+                        val payment = input.text.toString().toDoubleOrNull() ?: 0.0
+                        val db = FirebaseFirestore.getInstance()
+                        db.collection("events")
+                            .whereEqualTo("name", event.name)
+                            .whereEqualTo("startDate", event.startDate)
+                            .whereEqualTo("endDate", event.endDate)
+                            .get()
+                            .addOnSuccessListener { result ->
+                                for (document in result) {
+                                    db.collection("events").document(document.id)
+                                        .update("payment", payment)
+                                }
+                                event.payment = payment
+                                notifyItemChanged(position)
+                            }
+                    }
+                    .setNegativeButton("Anuluj", null)
+                    .show()
+            }
+        } else {
+            holder.doneButton.visibility = View.VISIBLE
+            holder.paymentContainer.visibility = View.GONE
+            holder.doneButton.setOnClickListener {
+                val db = FirebaseFirestore.getInstance()
+                db.collection("events")
+                    .whereEqualTo("name", event.name)
+                    .whereEqualTo("startDate", event.startDate)
+                    .whereEqualTo("endDate", event.endDate)
+                    .get()
+                    .addOnSuccessListener { result ->
+                        for (document in result) {
+                            db.collection("events").document(document.id)
+                                .update("done", 1)
+                        }
+                        event.done = 1
+                        notifyItemChanged(position)
+                    }
+            }
+        }
+    }
+
+    override fun getItemCount(): Int = events.size
+
+    fun updateList(newEvents: List<Event>) {
+        events = newEvents.toMutableList()
+        notifyDataSetChanged()
+    }
+}

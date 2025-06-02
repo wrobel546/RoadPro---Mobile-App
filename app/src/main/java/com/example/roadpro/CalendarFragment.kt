@@ -24,7 +24,6 @@ class CalendarFragment : Fragment() {
     private val binding get() = _binding!!
 
     private val db = FirebaseFirestore.getInstance()
-    private val eventList = mutableListOf<Event>()
     private lateinit var eventAdapter: EventAdapter
     private lateinit var calendarAdapter: CalendarAdapter
 
@@ -42,14 +41,14 @@ class CalendarFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
-
         // Setup for events RecyclerView
-        eventAdapter = EventAdapter(eventList) { eventToDelete ->
+        eventAdapter = EventAdapter(mutableListOf()) { eventToDelete ->
             confirmAndDeleteEvent(eventToDelete)
         }
         binding.eventsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.eventsRecyclerView.adapter = eventAdapter
 
+        // Nie trzymaj eventów w RAM, zawsze pobieraj z Firestore
         loadEventsFromFirestore()
 
         // Setup for calendar RecyclerView
@@ -73,7 +72,7 @@ class CalendarFragment : Fragment() {
         binding.monthSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parentView: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 currentMonth = position
-                loadCalendarData()
+                loadEventsFromFirestore()
             }
 
             override fun onNothingSelected(parentView: AdapterView<*>?) {}
@@ -90,7 +89,7 @@ class CalendarFragment : Fragment() {
         binding.yearSpinner.onItemSelectedListener = object : AdapterView.OnItemSelectedListener {
             override fun onItemSelected(parentView: AdapterView<*>?, view: View?, position: Int, id: Long) {
                 currentYear = years[position].toInt()
-                loadCalendarData()
+                loadEventsFromFirestore()
             }
 
             override fun onNothingSelected(parentView: AdapterView<*>?) {}
@@ -117,28 +116,41 @@ class CalendarFragment : Fragment() {
         binding.monthSpinner.setSelection(currentMonth)
         binding.yearSpinner.setSelection(currentYear - 2000)
 
-        loadCalendarData()
+        loadEventsFromFirestore()
     }
 
-    private fun loadCalendarData() {
+    private fun loadCalendarData(events: List<Event>) {
         // Generate calendar days for the current month/year
         val days = generateCalendarDaysForMonth(currentYear, currentMonth)
 
         // Update the calendar adapter
         val calendarDays = days.map { day ->
-            val eventCount = eventList.count { it.startDate == day.date }
-
-            // Check if the day is within any event's range
-            val isSelected = eventList.any { event ->
+            val eventCount = events.count { it.startDate == day.date }
+            val isSelected = events.any { event ->
                 isDateInRange(day.date, event.startDate, event.endDate)
             }
-
             CalendarDay(day.date, eventCount, isSelected)
         }
 
+        // Przygotuj mapę: data -> kolor (pierwszego eventu tego dnia)
+        val colorMap = mutableMapOf<String, Int>()
+        for (event in events) {
+            val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            val start = format.parse(event.startDate)
+            val end = format.parse(event.endDate)
+            if (start != null && end != null) {
+                var cal = Calendar.getInstance()
+                cal.time = start
+                while (!cal.time.after(end)) {
+                    val dateStr = format.format(cal.time)
+                    if (!colorMap.containsKey(dateStr)) colorMap[dateStr] = event.color
+                    cal.add(Calendar.DAY_OF_MONTH, 1)
+                }
+            }
+        }
+        calendarAdapter.eventColors = colorMap
         calendarAdapter.updateData(calendarDays)
     }
-
 
     private fun isDateInRange(date: String, startDate: String, endDate: String): Boolean {
         val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
@@ -171,10 +183,11 @@ class CalendarFragment : Fragment() {
         return days
     }
 
-    private fun loadEventsFromFirestore() {
+    private fun loadEventsFromFirestore(onLoaded: ((List<Event>) -> Unit)? = null) {
         val user = FirebaseAuth.getInstance().currentUser
         if (user == null) {
             Toast.makeText(requireContext(), "Nie jesteś zalogowany", Toast.LENGTH_SHORT).show()
+            onLoaded?.invoke(emptyList())
             return
         }
 
@@ -182,44 +195,34 @@ class CalendarFragment : Fragment() {
             .whereEqualTo("userId", user.uid)
             .get()
             .addOnSuccessListener { result ->
-                eventList.clear()
-                for (document in result) {
-                    val event = document.toObject(Event::class.java)
-                    eventList.add(event)
-                }
-                // Po załadowaniu nowych wydarzeń zaktualizuj kalendarz
-                loadCalendarData()
+                val events = result.map { it.toObject(Event::class.java) }
+                eventAdapter.updateList(events)
+                loadCalendarData(events)
+                onLoaded?.invoke(events)
             }
             .addOnFailureListener { e ->
                 Toast.makeText(requireContext(), "Błąd ładowania: ${e.message}", Toast.LENGTH_SHORT).show()
+                onLoaded?.invoke(emptyList())
             }
     }
 
-
     private fun updateCalendarDays() {
-        val days = generateCalendarDaysForMonth(currentYear, currentMonth)
-
-        val calendarDays = days.map { day ->
-            val eventCount = eventList.count { it.startDate == day.date }
-            CalendarDay(day.date, eventCount)
-        }
-
-        calendarAdapter.updateData(calendarDays)
+        // Zawsze pobieraj z Firestore
+        loadEventsFromFirestore()
     }
 
     private fun updateEventList(selectedDate: String) {
-        val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val selected = format.parse(selectedDate)
-
-        val filteredEvents = eventList.filter { event ->
-            val start = format.parse(event.startDate)
-            val end = format.parse(event.endDate)
-
-            selected != null && start != null && end != null &&
-                    !selected.before(start) && !selected.after(end)
+        loadEventsFromFirestore { events ->
+            val format = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            val selected = format.parse(selectedDate)
+            val filteredEvents = events.filter { event ->
+                val start = format.parse(event.startDate)
+                val end = format.parse(event.endDate)
+                selected != null && start != null && end != null &&
+                        !selected.before(start) && !selected.after(end)
+            }
+            eventAdapter.updateList(filteredEvents)
         }
-
-        eventAdapter.updateList(filteredEvents)
     }
 
     private fun confirmAndDeleteEvent(event: Event) {
@@ -253,9 +256,10 @@ class CalendarFragment : Fragment() {
                         .delete()
                         .addOnSuccessListener {
                             Toast.makeText(requireContext(), "Usunięto wydarzenie", Toast.LENGTH_SHORT).show()
-                            eventList.remove(event)
-                            eventAdapter.updateList(eventList)
-                            updateCalendarDays()
+                            // Po usunięciu odśwież widok z Firestore
+                            loadEventsFromFirestore()
+                            // Dodaj odświeżenie eventList w MainActivity
+                            (activity as? MainActivity)?.reloadEventsFromFirestore()
                         }
                         .addOnFailureListener {
                             Toast.makeText(requireContext(), "Błąd usuwania", Toast.LENGTH_SHORT).show()
@@ -267,40 +271,10 @@ class CalendarFragment : Fragment() {
             }
     }
 
-    fun showAddEventDialog() {
-        val addEventDialog = AddEventDialog()
-        addEventDialog.setListener(object : AddEventDialog.AddEventDialogListener {
-            override fun onEventAdded(eventName: String, location: String, startDate: String, endDate: String) {
-                val event = Event(eventName, location, startDate, endDate)
-                saveEventToFirestore(event)
-                eventList.add(event)
-                eventAdapter.updateList(eventList)
-                updateCalendarDays()
-                loadCalendarData()
-            }
-        })
-        addEventDialog.show(parentFragmentManager, "AddEventDialog")
-    }
-
-    private fun saveEventToFirestore(event: Event) {
-        val user = FirebaseAuth.getInstance().currentUser ?: return
-        val eventRef = db.collection("events").document()
-
-        val data = hashMapOf(
-            "userId" to user.uid,
-            "name" to event.name,
-            "location" to event.location,
-            "startDate" to event.startDate,
-            "endDate" to event.endDate
-        )
-
-        eventRef.set(data)
-            .addOnSuccessListener {
-                Toast.makeText(requireContext(), "Wydarzenie zapisane!", Toast.LENGTH_SHORT).show()
-            }
-            .addOnFailureListener { e ->
-                Toast.makeText(requireContext(), "Błąd zapisu: ${e.message}", Toast.LENGTH_SHORT).show()
-            }
+    // Dodaj tę metodę do CalendarFragment
+    fun reloadEvents(newEvents: List<Event>) {
+        // Zamiast trzymać w RAM, odśwież z Firestore
+        loadEventsFromFirestore()
     }
 
     override fun onDestroyView() {
