@@ -1,0 +1,28 @@
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="wrap_content"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    android:gravity="center"
+    android:padding="8dp"
+    android:layout_margin="4dp"
+    android:background="@drawable/day_selector_bg"
+    android:id="@+id/dayContainer">
+
+    <TextView
+        android:id="@+id/dayText"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="12"
+        android:textSize="14sp"
+        android:textColor="@color/black"
+        android:padding="6dp"/>
+
+<!--    <TextView-->
+<!--        android:id="@+id/eventCountText"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="0"-->
+<!--        android:textSize="12sp"-->
+<!--        android:textColor="@color/black"/>-->
+
+</LinearLayout>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <!-- Tło, gdy element jest wybrany -->
+    <item android:state_selected="true" android:drawable="@drawable/bg_selected" />
+
+    <!-- Tło, gdy element jest wciśnięty -->
+    <item android:state_pressed="true" android:drawable="@drawable/bg_pressed" />
+
+    <!-- Tło domyślne -->
+    <item android:drawable="@drawable/bg_default" />
+
+</selector>
