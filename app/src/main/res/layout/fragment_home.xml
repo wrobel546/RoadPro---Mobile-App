@@ -88,6 +88,8 @@
                             android:layout_marginTop="10dp"
                             android:layout_marginEnd="32dp"
                             android:layout_marginBottom="10dp"
+                            android:background="@drawable/rounded_calendar_corner"
+                            android:padding="10dp"
                             android:drawableStart="@drawable/baseline_settings_24"
                             android:text="ACCOUNT SETTINGS" />
                     </LinearLayout>

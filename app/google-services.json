@@ -12,7 +12,20 @@
           "package_name": "com.example.roadpro"
         }
       },
-      "oauth_client": [],
+      "oauth_client": [
+        {
+          "client_id": "1059698955611-fb0p7a3tonjg4r9525ipa4thecgqhe1r.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.example.roadpro",
+            "certificate_hash": "6a92aaa0222b67941d4e1425ca9f1fe058d82c87"
+          }
+        },
+        {
+          "client_id": "1059698955611-9fgl4hcvh6ecaugsbi1tio1qio30sl25.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
       "api_key": [
         {
           "current_key": "AIzaSyBhDqnXgCRpO-7Q1Nye8Z9EJCcYUgS_ZFw"
@@ -20,7 +33,12 @@
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": []
+          "other_platform_oauth_client": [
+            {
+              "client_id": "1059698955611-66sj3nqhnbgmf55rt7frmckv6234cbif.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
         }
       }
     }

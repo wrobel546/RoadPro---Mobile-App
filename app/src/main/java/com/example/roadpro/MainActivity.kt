@@ -1,82 +1,79 @@
 package com.example.roadpro
 
+
 import android.content.Intent
 import android.os.Bundle
 import android.widget.Button
 import android.widget.Toast
-import androidx.activity.enableEdgeToEdge
 import androidx.appcompat.app.AppCompatActivity
-import androidx.core.view.ViewCompat
-import androidx.core.view.WindowInsetsCompat
 import androidx.fragment.app.Fragment
 import com.example.roadpro.databinding.ActivityMainBinding
-import com.google.android.material.bottomnavigation.BottomNavigationView
 import com.google.firebase.auth.FirebaseAuth
 
 class MainActivity : AppCompatActivity() {
 
     private lateinit var binding: ActivityMainBinding
     private lateinit var firebaseAuth: FirebaseAuth
-
-
+    private var userEmail: String? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
 
-        // Inicjalizacja Firebase Authentication
         firebaseAuth = FirebaseAuth.getInstance()
 
-        // Edge to Edge i obsługa systemowych pasków
-        enableEdgeToEdge()
-        ViewCompat.setOnApplyWindowInsetsListener(findViewById(R.id.main)) { v, insets ->
-            val systemBars = insets.getInsets(WindowInsetsCompat.Type.systemBars())
-            v.setPadding(systemBars.left, systemBars.top, systemBars.right, systemBars.bottom)
-            insets
+        // Odbierz adres e-mail użytkownika z Intent
+        userEmail = intent.getStringExtra("userEmail") ?: "example@gmail.com"
+        println("Odebrano email w MainActivity: $userEmail") // Log
+
+        // Ustaw domyślny fragment (HomeFragment)
+        val homeFragment = HomeFragment().apply {
+            arguments = Bundle().apply { putString("userEmail", userEmail) }
         }
+        replaceFragment(homeFragment)
 
-        replaceFragment(HomeFragment())
-        binding.bottomNav.background = null
-
+        // Obsługa Bottom Navigation Bar
         binding.bottomNav.setOnItemSelectedListener { item ->
-            when (item.itemId) {
-                R.id.home -> replaceFragment(HomeFragment())
-                R.id.calendar -> replaceFragment(CalendarFragment())
-                R.id.madeRoates -> replaceFragment(MadeRoutesFragment())
-                R.id.statitics -> replaceFragment(StatisticFragment())
+            val fragment = when (item.itemId) {
+                R.id.home -> HomeFragment().apply { arguments = Bundle().apply { putString("userEmail", userEmail) } }
+                R.id.calendar -> CalendarFragment()
+                R.id.madeRoates -> MadeRoutesFragment()
+                R.id.statitics -> StatisticFragment()
+                else -> null
             }
+            fragment?.let { replaceFragment(it) }
             true
         }
 
+        // FloatingActionButton - dodawanie wydarzeń w CalendarFragment
+        binding.floatingActionButton.setOnClickListener {
+            val currentFragment = supportFragmentManager.findFragmentById(R.id.frame_layout)
+            if (currentFragment is CalendarFragment) {
+                currentFragment.showAddEventDialog()
+            } else {
+                Toast.makeText(this, "Dodawanie wydarzeń działa tylko w kalendarzu!", Toast.LENGTH_SHORT).show()
+            }
+        }
+
         // Obsługa wylogowania
-        logoutService()
-
+        setupLogoutButton()
     }
 
-
-
-    private fun replaceFragment(fragment: Fragment){
-        val fragmentManager = supportFragmentManager
-        val fragmentTransaction = fragmentManager.beginTransaction()
-        fragmentTransaction.replace(R.id.frame_layout,fragment)
-        fragmentTransaction.commit()
+    private fun replaceFragment(fragment: Fragment) {
+        supportFragmentManager.beginTransaction()
+            .replace(R.id.frame_layout, fragment)
+            .commit()
     }
 
-    private fun logoutService(){
+    private fun setupLogoutButton() {
         val logoutBtn = findViewById<Button>(R.id.logoutBtn)
         logoutBtn.setOnClickListener {
-            // Wylogowanie użytkownika
             firebaseAuth.signOut()
-
-            // Przechodzimy do ekranu logowania po wylogowaniu
             val intent = Intent(this, SignInActivity::class.java)
             intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
             startActivity(intent)
-
-            // Zakończenie bieżącej aktywności
-            finish()
+            finish() // Zamyka MainActivity
         }
     }
 }

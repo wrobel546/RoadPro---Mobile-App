@@ -110,4 +110,14 @@ class GoogleAuthClient(
         firebaseAuth.signOut()
     }
 
+    suspend fun getSignedInUserEmail(): String? {
+        return try {
+            val user = firebaseAuth.currentUser
+            user?.email // Zwróć adres e-mail użytkownika
+        } catch (e: Exception) {
+            e.printStackTrace()
+            null
+        }
+    }
+
 }

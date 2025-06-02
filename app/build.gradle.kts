@@ -2,6 +2,7 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.google.gms.google.services)
+    alias(libs.plugins.kotlin.compose)
 }
 
 android {
@@ -38,6 +39,7 @@ android {
 
     buildFeatures{
         viewBinding = true
+        compose = true
     }
 }
 
@@ -48,6 +50,13 @@ dependencies {
     implementation(libs.material)
     implementation(libs.androidx.activity)
     implementation(libs.androidx.constraintlayout)
+    implementation(libs.firebase.firestore.ktx)
+    implementation(libs.firebase.firestore)
+    implementation(libs.androidx.lifecycle.runtime.ktx)
+    implementation(libs.androidx.activity.compose)
+    implementation(platform(libs.androidx.compose.bom))
+    implementation(libs.androidx.ui.graphics)
+    implementation(libs.androidx.ui.tooling.preview)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -59,9 +68,25 @@ dependencies {
     implementation(libs.play.services.auth)
 
     implementation(libs.firebase.auth)
+    implementation(libs.firebase.storage)
+
     implementation(libs.androidx.credentials)
     implementation(libs.androidx.credentials.play.services.auth)
+
     implementation(libs.googleid)
+    implementation(libs.play.services.maps)
+    implementation(libs.places)
+
+    implementation ("androidx.compose.ui:ui:1.7.8")
+    implementation ("androidx.compose.material:material:1.5.0")
+    implementation ("androidx.compose.material3:material3:1.3.1")
+    implementation ("androidx.compose.foundation:foundation:1.5.0")
+    implementation ("androidx.compose.runtime:runtime-livedata:1.7.8")
+    implementation ("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.7")
+    androidTestImplementation(platform(libs.androidx.compose.bom))
+    androidTestImplementation(libs.androidx.ui.test.junit4)
+    debugImplementation(libs.androidx.ui.tooling)
+    debugImplementation(libs.androidx.ui.test.manifest)
 
 
 }
