@@ -141,10 +141,26 @@ class MadeRoutesFragment : Fragment() {
         refreshFeesList()
 
         addFeeButton.setOnClickListener {
-            // Dodaj nową opłatę (przykład)
-            val newFee = Fee(name = "Nowa opłata", amount = 0.0)
-            tempFees.add(newFee)
-            refreshFeesList()
+            // Otwórz dialog do wpisania nowej opłaty
+            val feeEditView = LayoutInflater.from(requireContext()).inflate(R.layout.item_fee_edit, null)
+            val nameEdit = feeEditView.findViewById<EditText>(R.id.feeNameEditText)
+            val amountEdit = feeEditView.findViewById<EditText>(R.id.feeAmountEditText)
+
+            AlertDialog.Builder(requireContext())
+                .setTitle("Dodaj opłatę")
+                .setView(feeEditView)
+                .setPositiveButton("Dodaj") { _, _ ->
+                    val name = nameEdit.text.toString().trim()
+                    val amount = amountEdit.text.toString().toDoubleOrNull() ?: 0.0
+                    if (name.isNotEmpty()) {
+                        tempFees.add(Fee(name, amount))
+                        refreshFeesList()
+                    } else {
+                        Toast.makeText(requireContext(), "Podaj nazwę opłaty", Toast.LENGTH_SHORT).show()
+                    }
+                }
+                .setNegativeButton("Anuluj", null)
+                .show()
         }
 
         AlertDialog.Builder(requireContext())
@@ -163,6 +179,7 @@ class MadeRoutesFragment : Fragment() {
                             db.collection("events").document(document.id)
                                 .update("fees", tempFees.map { fee -> mapOf("name" to fee.name, "amount" to fee.amount) })
                         }
+                        reloadRoutes()
                     }
             }
             .setNegativeButton("Anuluj", null)
