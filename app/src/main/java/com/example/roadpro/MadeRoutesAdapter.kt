@@ -103,20 +103,41 @@ class MadeRoutesAdapter(
             holder.doneButton.visibility = View.VISIBLE
             holder.paymentContainer.visibility = View.GONE
             holder.doneButton.setOnClickListener {
-                val db = FirebaseFirestore.getInstance()
-                db.collection("events")
-                    .whereEqualTo("name", event.name)
-                    .whereEqualTo("startDate", event.startDate)
-                    .whereEqualTo("endDate", event.endDate)
-                    .get()
-                    .addOnSuccessListener { result ->
-                        for (document in result) {
-                            db.collection("events").document(document.id)
-                                .update("done", 1)
+                val context = holder.itemView.context
+                val input = EditText(context)
+                input.inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
+                input.hint = "Kwota otrzymana za przejazd"
+                AlertDialog.Builder(context)
+                    .setTitle("Podaj kwotę otrzymaną za przejazd")
+                    .setView(input)
+                    .setPositiveButton("Zapisz") { _, _ ->
+                        val payment = input.text.toString().toDoubleOrNull()
+                        if (payment == null || payment <= 0.0) {
+                            Toast.makeText(context, "Podaj poprawną kwotę!", Toast.LENGTH_SHORT).show()
+                            return@setPositiveButton
                         }
-                        event.done = 1
-                        notifyItemChanged(position)
+                        val db = FirebaseFirestore.getInstance()
+                        db.collection("events")
+                            .whereEqualTo("name", event.name)
+                            .whereEqualTo("startDate", event.startDate)
+                            .whereEqualTo("endDate", event.endDate)
+                            .get()
+                            .addOnSuccessListener { result ->
+                                for (document in result) {
+                                    db.collection("events").document(document.id)
+                                        .update(mapOf("done" to 1, "payment" to payment))
+                                }
+                                // Odśwież listę tras po zmianie statusu
+                                (holder.itemView.context as? androidx.fragment.app.FragmentActivity)?.let { activity ->
+                                    val fragment = activity.supportFragmentManager.findFragmentById(R.id.frame_layout)
+                                    if (fragment is MadeRoutesFragment) {
+                                        fragment.reloadRoutes()
+                                    }
+                                }
+                            }
                     }
+                    .setNegativeButton("Anuluj", null)
+                    .show()
             }
         }
     }

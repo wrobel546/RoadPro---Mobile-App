@@ -18,6 +18,30 @@
         android:textSize="38sp"
         android:textStyle="bold" />
 
+    <LinearLayout
+        android:id="@+id/tabsContainer"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="8dp">
+
+        <Button
+            android:id="@+id/tabNotDone"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Niezrealizowane" />
+
+        <Button
+            android:id="@+id/tabDone"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Zrealizowane" />
+    </LinearLayout>
+
     <androidx.recyclerview.widget.RecyclerView
         android:id="@+id/madeRoutesRecyclerView"
         android:layout_width="match_parent"

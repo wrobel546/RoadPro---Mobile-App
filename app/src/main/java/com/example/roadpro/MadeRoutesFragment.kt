@@ -15,12 +15,14 @@ import android.widget.ImageButton
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import android.widget.Button
 
 class MadeRoutesFragment : Fragment() {
 
     private lateinit var recyclerView: RecyclerView
     private lateinit var adapter: MadeRoutesAdapter
     private val db = FirebaseFirestore.getInstance()
+    private var showDone: Boolean = false // false = niezrealizowane, true = zrealizowane
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -36,6 +38,27 @@ class MadeRoutesFragment : Fragment() {
             { reloadRoutes() }
         )
         recyclerView.adapter = adapter
+
+        // Zakładki
+        val tabNotDone = view.findViewById<Button>(R.id.tabNotDone)
+        val tabDone = view.findViewById<Button>(R.id.tabDone)
+
+        tabNotDone.setOnClickListener {
+            showDone = false
+            reloadRoutes()
+            tabNotDone.isEnabled = false
+            tabDone.isEnabled = true
+        }
+        tabDone.setOnClickListener {
+            showDone = true
+            reloadRoutes()
+            tabNotDone.isEnabled = true
+            tabDone.isEnabled = false
+        }
+        // Domyślnie aktywna zakładka: niezrealizowane
+        tabNotDone.isEnabled = false
+        tabDone.isEnabled = true
+
         loadRoutes()
         return view
     }
@@ -61,7 +84,9 @@ class MadeRoutesFragment : Fragment() {
                     val color = doc.getLong("color")?.toInt() ?: 0xFFBDBDBD.toInt()
                     event.copy(color = color)
                 }
-                adapter.updateList(routes)
+                // Filtrowanie po statusie done
+                val filtered = routes.filter { (it.done ?: 0) == if (showDone) 1 else 0 }
+                adapter.updateList(filtered)
             }
             .addOnFailureListener {
                 Toast.makeText(requireContext(), "Błąd ładowania tras", Toast.LENGTH_SHORT).show()
