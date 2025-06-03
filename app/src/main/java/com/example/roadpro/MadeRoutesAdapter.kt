@@ -280,14 +280,14 @@ class MadeRoutesAdapter(
             if (endDate != null && today.before(endDate)) {
                 holder.doneButton.isEnabled = false
                 holder.doneButton.alpha = 0.5f
-                holder.doneButton.text = "Zrealizowana (dostępne od ${event.endDate})"
+                holder.doneButton.text = "Zrealizowano (dostępne od ${event.endDate})"
                 holder.doneButton.setOnClickListener {
                     Toast.makeText(holder.itemView.context, "Możesz oznaczyć trasę jako zrealizowaną dopiero w dniu powrotu lub później.", Toast.LENGTH_SHORT).show()
                 }
             } else {
                 holder.doneButton.isEnabled = true
                 holder.doneButton.alpha = 1.0f
-                holder.doneButton.text = "Zrealizowana!"
+                holder.doneButton.text = "Zrealizowano!"
                 holder.doneButton.setOnClickListener {
                     // WALIDACJA STANU LICZNIKA
                     val startLicznik = event.StartLicznik
