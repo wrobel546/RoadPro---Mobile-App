@@ -63,16 +63,33 @@
             android:gravity="end" />
     </LinearLayout>
 
-    <!-- Przycisk usuwania -->
-    <Button
-        android:id="@+id/deleteButton"
+    <!-- Przycisk usuwania i edycji -->
+    <LinearLayout
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Usuń"
-        android:textColor="@android:color/white"
-        android:backgroundTint="@android:color/holo_red_light"
-        android:layout_gravity="end"
-        android:layout_marginTop="8dp"
-        android:minWidth="0dp"
-        android:minHeight="0dp" />
+        android:orientation="horizontal"
+        android:gravity="end|center_vertical"
+        android:layout_marginTop="8dp">
+
+        <!-- Przycisk usuwania -->
+        <Button
+            android:id="@+id/deleteButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Usuń"
+            android:textColor="@android:color/white"
+            android:backgroundTint="@android:color/holo_red_light"
+            android:minWidth="0dp"
+            android:minHeight="0dp" />
+
+        <!-- Przycisk edycji -->
+        <ImageButton
+            android:id="@+id/editButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:src="@drawable/baseline_settings_24"
+            android:contentDescription="Edytuj"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:padding="8dp" />
+    </LinearLayout>
 </LinearLayout>

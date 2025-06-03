@@ -1,5 +1,6 @@
 package com.example.roadpro
 
+import android.app.DatePickerDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -7,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
+import android.widget.EditText
 import android.widget.ImageView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
@@ -42,9 +44,11 @@ class CalendarFragment : Fragment() {
         super.onViewCreated(view, savedInstanceState)
 
         // Setup for events RecyclerView
-        eventAdapter = EventAdapter(mutableListOf()) { eventToDelete ->
-            confirmAndDeleteEvent(eventToDelete)
-        }
+        eventAdapter = EventAdapter(
+            mutableListOf(),
+            { eventToDelete -> confirmAndDeleteEvent(eventToDelete) },
+            { eventToEdit -> showEditDialog(eventToEdit) } // Dodaj obsługę edycji
+        )
         binding.eventsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
         binding.eventsRecyclerView.adapter = eventAdapter
 
@@ -275,6 +279,122 @@ class CalendarFragment : Fragment() {
     fun reloadEvents(newEvents: List<Event>) {
         // Zamiast trzymać w RAM, odśwież z Firestore
         loadEventsFromFirestore()
+    }
+
+    // Dodaj metodę do obsługi dialogu edycji wyjazdu (możesz skopiować z MadeRoutesFragment)
+    private fun showEditDialog(event: Event) {
+        val dialogView = LayoutInflater.from(requireContext()).inflate(R.layout.dialog_edit_event, null)
+        val nameEdit = dialogView.findViewById<EditText>(R.id.editEventName)
+        val locationEdit = dialogView.findViewById<EditText>(R.id.editEventLocation)
+        val startDateEdit = dialogView.findViewById<EditText>(R.id.editEventStartDate)
+        val endDateEdit = dialogView.findViewById<EditText>(R.id.editEventEndDate)
+
+        nameEdit.setText(event.name)
+        locationEdit.setText(event.location)
+        startDateEdit.setText(event.startDate)
+        endDateEdit.setText(event.endDate)
+
+        // Obsługa wyboru daty przez DatePicker
+        startDateEdit.setOnClickListener {
+            val cal = Calendar.getInstance()
+            val parts = event.startDate.split("-")
+            if (parts.size == 3) {
+                cal.set(parts[0].toInt(), parts[1].toInt() - 1, parts[2].toInt())
+            }
+            DatePickerDialog(requireContext(), { _, y, m, d ->
+                startDateEdit.setText(String.format("%04d-%02d-%02d", y, m + 1, d))
+            }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
+        }
+        endDateEdit.setOnClickListener {
+            val cal = Calendar.getInstance()
+            val parts = event.endDate.split("-")
+            if (parts.size == 3) {
+                cal.set(parts[0].toInt(), parts[1].toInt() - 1, parts[2].toInt())
+            }
+            DatePickerDialog(requireContext(), { _, y, m, d ->
+                endDateEdit.setText(String.format("%04d-%02d-%02d", y, m + 1, d))
+            }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
+        }
+
+        val dialog = android.app.AlertDialog.Builder(requireContext())
+            .setTitle("Edytuj wyjazd")
+            .setView(dialogView)
+            .setPositiveButton("Zapisz", null)
+            .setNegativeButton("Anuluj", null)
+            .create()
+
+        dialog.setOnShowListener {
+            val saveBtn = dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE)
+            saveBtn.setOnClickListener {
+                val newName = nameEdit.text.toString().trim()
+                val newLocation = locationEdit.text.toString().trim()
+                val newStart = startDateEdit.text.toString().trim()
+                val newEnd = endDateEdit.text.toString().trim()
+
+                if (newName.isEmpty() || newLocation.isEmpty() || newStart.isEmpty() || newEnd.isEmpty()) {
+                    Toast.makeText(requireContext(), "Wypełnij wszystkie pola!", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+                if (newStart > newEnd) {
+                    Toast.makeText(requireContext(), "Data rozpoczęcia musi być wcześniejsza niż data zakończenia!", Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                val user = FirebaseAuth.getInstance().currentUser ?: return@setOnClickListener
+                // Pobierz wszystkie eventy użytkownika i sprawdź kolizje dat
+                db.collection("events")
+                    .whereEqualTo("userId", user.uid)
+                    .get()
+                    .addOnSuccessListener { result ->
+                        val format = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+                        val newStartDate = format.parse(newStart)
+                        val newEndDate = format.parse(newEnd)
+                        var overlap = false
+                        for (doc in result) {
+                            val other = doc.toObject(Event::class.java)
+                            // Pomijamy aktualnie edytowany event
+                            if (other.name == event.name && other.startDate == event.startDate && other.endDate == event.endDate) continue
+                            val otherStart = format.parse(other.startDate)
+                            val otherEnd = format.parse(other.endDate)
+                            if (newStartDate != null && newEndDate != null && otherStart != null && otherEnd != null) {
+                                // Sprawdź czy zakresy się nakładają
+                                if (!(newEndDate.before(otherStart) || newStartDate.after(otherEnd))) {
+                                    overlap = true
+                                    break
+                                }
+                            }
+                        }
+                        if (overlap) {
+                            Toast.makeText(requireContext(), "Wyjazd nachodzi na inny wyjazd!", Toast.LENGTH_LONG).show()
+                            return@addOnSuccessListener
+                        }
+                        // Jeśli nie ma kolizji, zaktualizuj event
+                        db.collection("events")
+                            .whereEqualTo("userId", user.uid)
+                            .whereEqualTo("name", event.name)
+                            .whereEqualTo("startDate", event.startDate)
+                            .whereEqualTo("endDate", event.endDate)
+                            .get()
+                            .addOnSuccessListener { result2 ->
+                                for (document in result2) {
+                                    db.collection("events").document(document.id)
+                                        .update(
+                                            mapOf(
+                                                "name" to newName,
+                                                "location" to newLocation,
+                                                "startDate" to newStart,
+                                                "endDate" to newEnd
+                                            )
+                                        )
+                                }
+                                Toast.makeText(requireContext(), "Zapisano zmiany", Toast.LENGTH_SHORT).show()
+                                loadEventsFromFirestore()
+                                dialog.dismiss()
+                            }
+                    }
+            }
+        }
+        dialog.show()
     }
 
     override fun onDestroyView() {
