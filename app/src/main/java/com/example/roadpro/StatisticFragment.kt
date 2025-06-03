@@ -5,16 +5,119 @@ import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-
+import android.widget.ImageButton
+import android.widget.TextView
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
+import java.text.SimpleDateFormat
+import java.util.*
 
 class StatisticFragment : Fragment() {
+
+    private lateinit var monthsRecyclerView: RecyclerView
+    private lateinit var adapter: MonthProfitAdapter
+    private var selectedYear: Int = Calendar.getInstance().get(Calendar.YEAR)
+    private lateinit var yearTextView: TextView
+    private lateinit var prevYearButton: ImageButton
+    private lateinit var nextYearButton: ImageButton
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        // Inflate the layout for this fragment
-        return inflater.inflate(R.layout.fragment_statistic, container, false)
+        val view = inflater.inflate(R.layout.fragment_statistic, container, false)
+        monthsRecyclerView = view.findViewById(R.id.monthsRecyclerView)
+        adapter = MonthProfitAdapter()
+        monthsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+        monthsRecyclerView.adapter = adapter
+
+        yearTextView = view.findViewById(R.id.yearTextView)
+        prevYearButton = view.findViewById(R.id.prevYearButton)
+        nextYearButton = view.findViewById(R.id.nextYearButton)
+
+        yearTextView.text = selectedYear.toString()
+
+        prevYearButton.setOnClickListener {
+            selectedYear--
+            yearTextView.text = selectedYear.toString()
+            loadProfitsForYear(selectedYear)
+        }
+        nextYearButton.setOnClickListener {
+            selectedYear++
+            yearTextView.text = selectedYear.toString()
+            loadProfitsForYear(selectedYear)
+        }
+
+        loadProfitsForYear(selectedYear)
+        return view
     }
 
+    private fun loadProfitsForYear(year: Int) {
+        val user = FirebaseAuth.getInstance().currentUser ?: return
+        val db = FirebaseFirestore.getInstance()
+        db.collection("events")
+            .whereEqualTo("userId", user.uid)
+            .whereEqualTo("done", 1)
+            .get()
+            .addOnSuccessListener { result ->
+                val monthProfits = DoubleArray(12) { 0.0 }
+                val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                for (doc in result) {
+                    val event = doc.toObject(Event::class.java)
+                    val endDate = try { sdf.parse(event.endDate) } catch (e: Exception) { null }
+                    if (endDate != null) {
+                        val cal = Calendar.getInstance()
+                        cal.time = endDate
+                        val eventYear = cal.get(Calendar.YEAR)
+                        val eventMonth = cal.get(Calendar.MONTH)
+                        if (eventYear == year) {
+                            val payment = event.payment ?: 0.0
+                            val fees = event.fees?.sumOf { it.amount } ?: 0.0
+                            val profit = payment - fees
+                            monthProfits[eventMonth] += profit
+                        }
+                    }
+                }
+                val totalProfit = monthProfits.sum()
+                val totalProfitForPercent = totalProfit.takeIf { it != 0.0 } ?: 1.0 // uniknij dzielenia przez 0
+                val months = resources.getStringArray(R.array.months)
+                val data = months.mapIndexed { idx, name ->
+                    val percent = (monthProfits[idx] / totalProfitForPercent * 100.0)
+                    MonthProfit(name, monthProfits[idx], percent)
+                }
+                adapter.submitList(data)
+                // Ustaw sumaryczny zysk roczny na dole
+                view?.findViewById<TextView>(R.id.yearTotalProfitTextView)?.text =
+                    "Suma zysku: %.2f zł".format(totalProfit)
+            }
+    }
+
+    data class MonthProfit(val month: String, val profit: Double, val percent: Double)
+
+    class MonthProfitAdapter : RecyclerView.Adapter<MonthProfitAdapter.ViewHolder>() {
+        private var items: List<MonthProfit> = emptyList()
+        fun submitList(list: List<MonthProfit>) {
+            items = list
+            notifyDataSetChanged()
+        }
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+            val view = LayoutInflater.from(parent.context)
+                .inflate(R.layout.item_month_profit, parent, false)
+            return ViewHolder(view)
+        }
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            val item = items[position]
+            holder.monthName.text = item.month
+            holder.monthProfit.text = String.format("%.2f zł (%.1f%%)", item.profit, item.percent)
+        }
+        override fun getItemCount() = items.size
+        class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
+            val monthName: TextView = view.findViewById(R.id.monthNameTextView)
+            val monthProfit: TextView = view.findViewById(R.id.monthProfitTextView)
+        }
+    }
 }
+
+// ...Event class definition remains unchanged...

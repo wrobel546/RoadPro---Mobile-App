@@ -1,18 +1,76 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@color/turquoise"
+    android:orientation="vertical"
     tools:context=".StatisticFragment">
 
-    <!-- TODO: Update blank fragment layout -->
     <TextView
+        android:id="@+id/statistics_title"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="Statistics"
+        android:layout_height="wrap_content"
+        android:text="Zyski roczne"
         android:gravity="center"
         android:textSize="30sp"
-        android:textColor="@color/white"/>
+        android:textColor="@color/white"
+        android:padding="16dp"/>
 
-</FrameLayout>
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:gravity="center"
+        android:paddingBottom="8dp">
+
+        <ImageButton
+            android:id="@+id/prevYearButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_arrow_left"
+            android:contentDescription="Poprzedni rok" />
+
+        <TextView
+            android:id="@+id/yearTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="2024"
+            android:textSize="22sp"
+            android:textColor="@color/white"
+            android:paddingLeft="24dp"
+            android:paddingRight="24dp"
+            android:gravity="center"/>
+
+        <ImageButton
+            android:id="@+id/nextYearButton"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:src="@drawable/ic_arrow_right"
+            android:contentDescription="Następny rok" />
+    </LinearLayout>
+
+    <!-- Przenieś sumaryczny zysk roczny wyżej -->
+    <TextView
+        android:id="@+id/yearTotalProfitTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Suma zysku: 0.00 zł"
+        android:textSize="20sp"
+        android:textStyle="bold"
+        android:textColor="@color/white"
+        android:gravity="center"
+        android:padding="12dp"
+        android:background="@android:color/transparent"/>
+
+    <!-- RecyclerView na miesiące i zyski -->
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/monthsRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:padding="8dp"
+        android:clipToPadding="false"/>
+</LinearLayout>
