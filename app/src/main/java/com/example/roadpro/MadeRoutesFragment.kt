@@ -102,18 +102,30 @@ class MadeRoutesFragment : Fragment() {
         beforeEdit.setText(event.StartLicznik.toString())
         afterEdit.setText(event.KoniecLicznik.toString())
 
-        // Dodaj obsługę listy opłat
         val feesList = mutableListOf<Fee>()
         // TODO: Inicjalizuj feesList danymi z event.fees jeśli istnieje
 
-        AlertDialog.Builder(requireContext())
+        val dialog = AlertDialog.Builder(requireContext())
             .setTitle("Edytuj wyjazd")
             .setView(dialogView)
-            .setPositiveButton("Zapisz") { _, _ ->
+            .setPositiveButton("Zapisz", null) // obsłużymy kliknięcie ręcznie
+            .setNegativeButton("Anuluj", null)
+            .create()
+
+        dialog.setOnShowListener {
+            val saveBtn = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            saveBtn.setOnClickListener {
                 val before = beforeEdit.text.toString().toLongOrNull() ?: 0L
                 val after = afterEdit.text.toString().toLongOrNull() ?: 0L
+                if (after <= before) {
+                    afterEdit.setBackgroundColor(0x30FF0000) // półprzezroczysty czerwony
+                    Toast.makeText(requireContext(), "Stan licznika po wyjeździe musi być większy niż przed wyjazdem!", Toast.LENGTH_LONG).show()
+                    return@setOnClickListener
+                } else {
+                    afterEdit.setBackgroundColor(0x00000000) // przezroczyste tło (reset)
+                }
                 // Zapisz do Firestore
-                val user = FirebaseAuth.getInstance().currentUser ?: return@setPositiveButton
+                val user = FirebaseAuth.getInstance().currentUser ?: return@setOnClickListener
                 db.collection("events")
                     .whereEqualTo("userId", user.uid)
                     .whereEqualTo("name", event.name)
@@ -135,10 +147,11 @@ class MadeRoutesFragment : Fragment() {
                         }
                         Toast.makeText(requireContext(), "Zapisano zmiany", Toast.LENGTH_SHORT).show()
                         reloadRoutes()
+                        dialog.dismiss()
                     }
             }
-            .setNegativeButton("Anuluj", null)
-            .show()
+        }
+        dialog.show()
     }
 
     private fun showFeesDialog(event: Event) {
