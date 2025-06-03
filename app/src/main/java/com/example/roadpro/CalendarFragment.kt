@@ -63,6 +63,10 @@ class CalendarFragment : Fragment() {
         binding.calendarRecyclerView.adapter = calendarAdapter
 
         setupMonthYearSelectors()
+
+        binding.showAllEventsButton.setOnClickListener {
+            showAllEventsForCurrentMonth()
+        }
     }
 
     private fun setupMonthYearSelectors() {
@@ -200,9 +204,31 @@ class CalendarFragment : Fragment() {
             .get()
             .addOnSuccessListener { result ->
                 val events = result.map { it.toObject(Event::class.java) }
-                eventAdapter.updateList(events)
+                // Filtrowanie tylko eventów z aktualnego miesiąca i roku
+                val filteredEvents = events.filter { event ->
+                    try {
+                        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+                        val start = sdf.parse(event.startDate)
+                        val end = sdf.parse(event.endDate)
+                        if (start == null || end == null) return@filter false
+                        val calStart = Calendar.getInstance().apply { time = start }
+                        val calEnd = Calendar.getInstance().apply { time = end }
+                        // Sprawdź czy event nachodzi na wybrany miesiąc/rok
+                        val month = currentMonth
+                        val year = currentYear
+                        (calStart.get(Calendar.YEAR) == year && calStart.get(Calendar.MONTH) == month) ||
+                        (calEnd.get(Calendar.YEAR) == year && calEnd.get(Calendar.MONTH) == month) ||
+                        (calStart.get(Calendar.YEAR) < year && calEnd.get(Calendar.YEAR) > year) ||
+                        (calStart.get(Calendar.YEAR) == year && calStart.get(Calendar.MONTH) < month && calEnd.get(Calendar.YEAR) == year && calEnd.get(Calendar.MONTH) > month) ||
+                        (calStart.get(Calendar.YEAR) < year && calEnd.get(Calendar.YEAR) == year && calEnd.get(Calendar.MONTH) >= month) ||
+                        (calStart.get(Calendar.YEAR) == year && calStart.get(Calendar.MONTH) <= month && calEnd.get(Calendar.YEAR) > year)
+                    } catch (e: Exception) {
+                        false
+                    }
+                }
+                eventAdapter.updateList(filteredEvents)
                 loadCalendarData(events)
-                onLoaded?.invoke(events)
+                onLoaded?.invoke(filteredEvents)
             }
             .addOnFailureListener { e ->
                 Toast.makeText(requireContext(), "Błąd ładowania: ${e.message}", Toast.LENGTH_SHORT).show()
@@ -395,6 +421,33 @@ class CalendarFragment : Fragment() {
             }
         }
         dialog.show()
+    }
+
+    private fun showAllEventsForCurrentMonth() {
+        loadEventsFromFirestore { events ->
+            val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+            val filteredEvents = events.filter { event ->
+                try {
+                    val start = sdf.parse(event.startDate)
+                    val end = sdf.parse(event.endDate)
+                    if (start == null || end == null) return@filter false
+                    val calStart = Calendar.getInstance().apply { time = start }
+                    val calEnd = Calendar.getInstance().apply { time = end }
+                    val month = currentMonth
+                    val year = currentYear
+                    // Sprawdź czy event nachodzi na wybrany miesiąc/rok
+                    (calStart.get(Calendar.YEAR) == year && calStart.get(Calendar.MONTH) == month) ||
+                    (calEnd.get(Calendar.YEAR) == year && calEnd.get(Calendar.MONTH) == month) ||
+                    (calStart.get(Calendar.YEAR) < year && calEnd.get(Calendar.YEAR) > year) ||
+                    (calStart.get(Calendar.YEAR) == year && calStart.get(Calendar.MONTH) < month && calEnd.get(Calendar.YEAR) == year && calEnd.get(Calendar.MONTH) > month) ||
+                    (calStart.get(Calendar.YEAR) < year && calEnd.get(Calendar.YEAR) == year && calEnd.get(Calendar.MONTH) >= month) ||
+                    (calStart.get(Calendar.YEAR) == year && calStart.get(Calendar.MONTH) <= month && calEnd.get(Calendar.YEAR) > year)
+                } catch (e: Exception) {
+                    false
+                }
+            }
+            eventAdapter.updateList(filteredEvents)
+        }
     }
 
     override fun onDestroyView() {

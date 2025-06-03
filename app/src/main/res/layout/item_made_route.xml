@@ -134,4 +134,13 @@
             android:contentDescription="Edytuj płatność"/>
     </LinearLayout>
 
+    <TextView
+        android:id="@+id/daysLeftTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text=""
+        android:textAppearance="?android:attr/textAppearanceSmall"
+        android:layout_marginTop="4dp"
+        android:layout_marginBottom="4dp"/>
+
 </LinearLayout>

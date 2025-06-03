@@ -91,6 +91,18 @@
             app:layout_constraintTop_toBottomOf="@id/calendarRecyclerView"
             android:layout_marginBottom="180dp"/>
 
+        <!-- Przycisk "Pokaż wszystkie wyjazdy z tego miesiąca" -->
+        <Button
+            android:id="@+id/showAllEventsButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Pokaż wszystkie wyjazdy z tego miesiąca"
+            android:layout_marginTop="8dp"
+            android:layout_marginBottom="8dp"
+            app:layout_constraintTop_toBottomOf="@id/eventsRecyclerView"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"/>
+
     </androidx.constraintlayout.widget.ConstraintLayout>
 
 </FrameLayout>

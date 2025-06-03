@@ -34,6 +34,8 @@ class MadeRoutesAdapter(
         val paymentContainer: LinearLayout = view.findViewById(R.id.paymentContainer)
         val paymentValue: TextView = view.findViewById(R.id.paymentValue)
         val editPaymentButton: ImageButton = view.findViewById(R.id.editPaymentButton)
+        // Dodaj pole do wyświetlania liczby dni do wyjazdu
+        val daysLeftTextView: TextView = view.findViewById(R.id.daysLeftTextView)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
@@ -47,6 +49,20 @@ class MadeRoutesAdapter(
         holder.eventLocation.text = "Lokalizacja: ${event.location}"
         holder.eventFrom.text = "Od: ${event.startDate}"
         holder.eventTo.text = "Do: ${event.endDate}"
+
+        // Wyświetl ile dni do wyjazdu
+        holder.daysLeftTextView.text = getDaysLeftText(event)
+
+        // Kliknięcie w cały item - pokaż dialog z lokalizacją, datą wyjazdu i przyjazdu
+        holder.itemView.setOnClickListener {
+            val context = holder.itemView.context
+            val message = "Lokalizacja: ${event.location}\nData wyjazdu: ${event.startDate}\nData przyjazdu: ${event.endDate}"
+            AlertDialog.Builder(context)
+                .setTitle(event.name)
+                .setMessage(message)
+                .setPositiveButton("OK", null)
+                .show()
+        }
 
         holder.settingsButton.setOnClickListener {
             onSettingsClicked(event)
@@ -159,6 +175,28 @@ class MadeRoutesAdapter(
         }
     }
 
+    // Funkcja pomocnicza do wyliczania liczby dni do wyjazdu
+    private fun getDaysLeftText(event: Event): String {
+        try {
+            val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+            val today = java.util.Calendar.getInstance()
+            val start = sdf.parse(event.startDate)
+            val end = sdf.parse(event.endDate)
+            if (start == null || end == null) return ""
+            val now = today.time
+            return when {
+                now.before(start) -> {
+                    val diff = ((start.time - now.time) / (1000 * 60 * 60 * 24)).toInt()
+                    if (diff == 0) "Wyjazd dziś" else "Za $diff dni"
+                }
+                now.after(end) -> "Wyjazd zakończony"
+                else -> "Wyjazd trwa"
+            }
+        } catch (e: Exception) {
+            return ""
+        }
+    }
+
     override fun getItemCount(): Int = events.size
 
     fun updateList(newEvents: List<Event>) {
@@ -166,3 +204,5 @@ class MadeRoutesAdapter(
         notifyDataSetChanged()
     }
 }
+
+// Upewnij się, że w item_made_route.xml istnieje TextView o id daysLeftTextView
