@@ -271,59 +271,77 @@ class MadeRoutesAdapter(
         } else {
             holder.doneButton.visibility = View.VISIBLE
             holder.paymentContainer.visibility = View.GONE
-            holder.doneButton.setOnClickListener {
-                // WALIDACJA STANU LICZNIKA
-                val startLicznik = event.StartLicznik
-                val koniecLicznik = event.KoniecLicznik
-                if (startLicznik == null || koniecLicznik == null || koniecLicznik <= startLicznik) {
-                    Toast.makeText(holder.itemView.context, "Uzupełnij poprawnie stan licznika przed i po wyjeździe!", Toast.LENGTH_LONG).show()
-                    return@setOnClickListener
+
+            // Dodaj blokadę przycisku przed dniem powrotu
+            val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+            val today = java.util.Calendar.getInstance().time
+            val endDate = try { sdf.parse(event.endDate) } catch (e: Exception) { null }
+
+            if (endDate != null && today.before(endDate)) {
+                holder.doneButton.isEnabled = false
+                holder.doneButton.alpha = 0.5f
+                holder.doneButton.text = "Zrealizowana (dostępne od ${event.endDate})"
+                holder.doneButton.setOnClickListener {
+                    Toast.makeText(holder.itemView.context, "Możesz oznaczyć trasę jako zrealizowaną dopiero w dniu powrotu lub później.", Toast.LENGTH_SHORT).show()
                 }
-                val context = holder.itemView.context
-                val input = EditText(context)
-                input.inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
-                input.hint = "Kwota otrzymana za przejazd"
-
-                val dialog = AlertDialog.Builder(context)
-                    .setTitle("Podaj kwotę otrzymaną za przejazd")
-                    .setView(input)
-                    .setPositiveButton("Zapisz", null) // obsługa ręczna
-                    .setNegativeButton("Anuluj", null)
-                    .create()
-
-                dialog.setOnShowListener {
-                    val saveBtn = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-                    saveBtn.setOnClickListener {
-                        val payment = input.text.toString().toDoubleOrNull()
-                        if (payment == null || payment <= 0.0) {
-                            input.setBackgroundColor(0x30FF0000) // półprzezroczysty czerwony
-                            Toast.makeText(context, "Podaj poprawną kwotę!", Toast.LENGTH_SHORT).show()
-                            return@setOnClickListener
-                        } else {
-                            input.setBackgroundColor(0x00000000) // reset tła
-                        }
-                        val db = FirebaseFirestore.getInstance()
-                        db.collection("events")
-                            .whereEqualTo("name", event.name)
-                            .whereEqualTo("startDate", event.startDate)
-                            .whereEqualTo("endDate", event.endDate)
-                            .get()
-                            .addOnSuccessListener { result ->
-                                for (document in result) {
-                                    db.collection("events").document(document.id)
-                                        .update(mapOf("done" to 1, "payment" to payment))
-                                }
-                                (holder.itemView.context as? androidx.fragment.app.FragmentActivity)?.let { activity ->
-                                    val fragment = activity.supportFragmentManager.findFragmentById(R.id.frame_layout)
-                                    if (fragment is MadeRoutesFragment) {
-                                        fragment.reloadRoutes()
-                                    }
-                                }
-                                dialog.dismiss()
-                            }
+            } else {
+                holder.doneButton.isEnabled = true
+                holder.doneButton.alpha = 1.0f
+                holder.doneButton.text = "Zrealizowana!"
+                holder.doneButton.setOnClickListener {
+                    // WALIDACJA STANU LICZNIKA
+                    val startLicznik = event.StartLicznik
+                    val koniecLicznik = event.KoniecLicznik
+                    if (startLicznik == null || koniecLicznik == null || koniecLicznik <= startLicznik) {
+                        Toast.makeText(holder.itemView.context, "Uzupełnij poprawnie stan licznika przed i po wyjeździe!", Toast.LENGTH_LONG).show()
+                        return@setOnClickListener
                     }
+                    val context = holder.itemView.context
+                    val input = EditText(context)
+                    input.inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
+                    input.hint = "Kwota otrzymana za przejazd"
+
+                    val dialog = AlertDialog.Builder(context)
+                        .setTitle("Podaj kwotę otrzymaną za przejazd")
+                        .setView(input)
+                        .setPositiveButton("Zapisz", null) // obsługa ręczna
+                        .setNegativeButton("Anuluj", null)
+                        .create()
+
+                    dialog.setOnShowListener {
+                        val saveBtn = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+                        saveBtn.setOnClickListener {
+                            val payment = input.text.toString().toDoubleOrNull()
+                            if (payment == null || payment <= 0.0) {
+                                input.setBackgroundColor(0x30FF0000) // półprzezroczysty czerwony
+                                Toast.makeText(context, "Podaj poprawną kwotę!", Toast.LENGTH_SHORT).show()
+                                return@setOnClickListener
+                            } else {
+                                input.setBackgroundColor(0x00000000) // reset tła
+                            }
+                            val db = FirebaseFirestore.getInstance()
+                            db.collection("events")
+                                .whereEqualTo("name", event.name)
+                                .whereEqualTo("startDate", event.startDate)
+                                .whereEqualTo("endDate", event.endDate)
+                                .get()
+                                .addOnSuccessListener { result ->
+                                    for (document in result) {
+                                        db.collection("events").document(document.id)
+                                            .update(mapOf("done" to 1, "payment" to payment))
+                                    }
+                                    (holder.itemView.context as? androidx.fragment.app.FragmentActivity)?.let { activity ->
+                                        val fragment = activity.supportFragmentManager.findFragmentById(R.id.frame_layout)
+                                        if (fragment is MadeRoutesFragment) {
+                                            fragment.reloadRoutes()
+                                        }
+                                    }
+                                    dialog.dismiss()
+                                }
+                        }
+                    }
+                    dialog.show()
                 }
-                dialog.show()
             }
         }
     }

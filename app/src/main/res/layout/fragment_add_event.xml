@@ -11,11 +11,13 @@
         android:layout_height="wrap_content"
         android:hint="Event Name" />
 
-    <EditText
+    <AutoCompleteTextView
         android:id="@+id/locationEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Lokalizacja" />
+        android:hint="Lokalizacja"
+        android:inputType="text"
+        android:singleLine="true" />
 
     <EditText
         android:id="@+id/startDateEditText"

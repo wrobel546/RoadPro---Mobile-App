@@ -86,6 +86,13 @@ class MadeRoutesFragment : Fragment() {
                 }
                 // Filtrowanie po statusie done
                 val filtered = routes.filter { (it.done ?: 0) == if (showDone) 1 else 0 }
+                    .sortedBy { event ->
+                        try {
+                            java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault()).parse(event.startDate)
+                        } catch (e: Exception) {
+                            null
+                        }
+                    }
                 adapter.updateList(filtered)
             }
             .addOnFailureListener {

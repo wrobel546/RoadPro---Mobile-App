@@ -225,6 +225,12 @@ class CalendarFragment : Fragment() {
                     } catch (e: Exception) {
                         false
                     }
+                }.sortedBy { event ->
+                    try {
+                        SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).parse(event.startDate)
+                    } catch (e: Exception) {
+                        null
+                    }
                 }
                 eventAdapter.updateList(filteredEvents)
                 loadCalendarData(events)
@@ -250,6 +256,12 @@ class CalendarFragment : Fragment() {
                 val end = format.parse(event.endDate)
                 selected != null && start != null && end != null &&
                         !selected.before(start) && !selected.after(end)
+            }.sortedBy { event ->
+                try {
+                    format.parse(event.startDate)
+                } catch (e: Exception) {
+                    null
+                }
             }
             eventAdapter.updateList(filteredEvents)
         }
@@ -444,6 +456,12 @@ class CalendarFragment : Fragment() {
                     (calStart.get(Calendar.YEAR) == year && calStart.get(Calendar.MONTH) <= month && calEnd.get(Calendar.YEAR) > year)
                 } catch (e: Exception) {
                     false
+                }
+            }.sortedBy { event ->
+                try {
+                    sdf.parse(event.startDate)
+                } catch (e: Exception) {
+                    null
                 }
             }
             eventAdapter.updateList(filteredEvents)
