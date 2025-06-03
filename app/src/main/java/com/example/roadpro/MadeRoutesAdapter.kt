@@ -47,6 +47,8 @@ class MadeRoutesAdapter(
         val paymentContainer: LinearLayout = view.findViewById(R.id.paymentContainer)
         val paymentValue: TextView = view.findViewById(R.id.paymentValue)
         val editPaymentButton: ImageButton = view.findViewById(R.id.editPaymentButton)
+        val profitValue: TextView = view.findViewById(R.id.profitValue) // nowy TextView na zysk
+        val expensesSumTextView: TextView = view.findViewById(R.id.expensesSumTextView) // dodane pole
         val daysLeftTextView: TextView = view.findViewById(R.id.daysLeftTextView)
     }
 
@@ -235,11 +237,17 @@ class MadeRoutesAdapter(
             onMoneyClicked(event)
         }
 
-        // Popraw: sprawdzanie i ustawianie przycisku "Zrealizowana!"
         if (event.done == 1) {
             holder.doneButton.visibility = View.GONE
             holder.paymentContainer.visibility = View.VISIBLE
-            holder.paymentValue.text = "%.2f zł".format(event.payment ?: 0.0)
+            val payment = event.payment ?: 0.0
+            val sumFees = event.fees?.sumOf { it.amount } ?: 0.0
+            val profit = payment - sumFees
+            holder.paymentValue.text = "%.2f zł".format(payment)
+            holder.expensesSumTextView.visibility = View.VISIBLE
+            holder.expensesSumTextView.text = "Suma kosztów: %.2f zł".format(sumFees)
+            holder.profitValue.visibility = View.VISIBLE
+            holder.profitValue.text = "Zysk: %.2f zł".format(profit)
             holder.editPaymentButton.setOnClickListener {
                 val context = holder.itemView.context
                 val input = EditText(context)
@@ -271,6 +279,8 @@ class MadeRoutesAdapter(
         } else {
             holder.doneButton.visibility = View.VISIBLE
             holder.paymentContainer.visibility = View.GONE
+            holder.expensesSumTextView.visibility = View.GONE
+            holder.profitValue.visibility = View.GONE
 
             // Dodaj blokadę przycisku przed dniem powrotu
             val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
