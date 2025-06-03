@@ -1,5 +1,10 @@
 package com.example.roadpro
 
+import android.animation.ObjectAnimator
+import android.animation.Animator
+import android.widget.ImageView
+import android.view.View
+import android.view.ViewTreeObserver
 import android.content.Context
 import android.content.Intent
 import android.os.Bundle
@@ -81,6 +86,43 @@ class SignInActivity : AppCompatActivity() {
         forgotPasswordBtn.setOnClickListener {
             showResetPasswordDialog()
         }
+
+        // Animacja przesuwania obrazka bus ze stałą prędkością, wyjeżdża bardziej i zaczyna wcześniej
+        val imageView = findViewById<ImageView>(R.id.busImageView)
+        imageView?.viewTreeObserver?.addOnGlobalLayoutListener(object : ViewTreeObserver.OnGlobalLayoutListener {
+            override fun onGlobalLayout() {
+                imageView.viewTreeObserver.removeOnGlobalLayoutListener(this)
+                val parent = imageView.parent as? View ?: return
+                val parentWidth = parent.width
+                val imageWidth = imageView.width
+                if (parentWidth > 0 && imageWidth > 0) {
+                    val startX = -1.3f * imageWidth // zaczyna bardziej po lewej
+                    val endX = parentWidth.toFloat() + 0.3f * imageWidth // kończy bardziej po prawej
+                    val distance = endX - startX
+                    val speed = 400f // px na sekundę (zmień jeśli chcesz szybciej/wolniej)
+                    val duration = ((distance / speed) * 1000).toLong()
+                    fun animateBus() {
+                        imageView.translationX = startX
+                        ObjectAnimator.ofFloat(imageView, "translationX", startX, endX).apply {
+                            this.duration = duration
+                            interpolator = null // brak interpolacji, stała prędkość
+                            addListener(object : Animator.AnimatorListener {
+                                override fun onAnimationStart(animation: Animator) {}
+                                override fun onAnimationEnd(animation: Animator) {
+                                    imageView.translationX = startX
+                                    imageView.post { animateBus() }
+                                }
+                                override fun onAnimationCancel(animation: Animator) {}
+                                override fun onAnimationRepeat(animation: Animator) {}
+                            })
+                            start()
+                        }
+                    }
+                    imageView.translationX = startX
+                    imageView.post { animateBus() }
+                }
+            }
+        })
 
         enableEdgeToEdge()
 

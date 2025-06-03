@@ -27,6 +27,7 @@ class StatisticFragment : Fragment() {
     private lateinit var prevYearButton: ImageButton
     private lateinit var nextYearButton: ImageButton
     private lateinit var barChartLayout: LinearLayout
+    private lateinit var barChartXAxisLayout: LinearLayout // nowa linia
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -57,6 +58,7 @@ class StatisticFragment : Fragment() {
 
         // Dodaj wykres słupkowy pod RecyclerView
         barChartLayout = view.findViewById(R.id.barChartLayout)
+        barChartXAxisLayout = view.findViewById(R.id.barChartXAxisLayout) // nowa linia
 
         loadProfitsForYear(selectedYear)
         return view
@@ -107,6 +109,7 @@ class StatisticFragment : Fragment() {
 
     private fun drawBarChart(monthProfits: DoubleArray) {
         barChartLayout.removeAllViews()
+        barChartXAxisLayout.removeAllViews() // czyść podpisy osi X
         val maxProfit = monthProfits.maxOrNull()?.takeIf { it > 0 } ?: 1.0
         val barWidthDp = 18
         val barMarginDp = 4
@@ -128,6 +131,24 @@ class StatisticFragment : Fragment() {
             bar.layoutParams = params
             bar.setBackgroundColor(Color.parseColor("#FFA726")) // pomarańczowy
             barChartLayout.addView(bar)
+
+            // Dodaj podpis osi X (numer miesiąca)
+            val label = TextView(requireContext())
+            label.text = (i + 1).toString()
+            label.gravity = Gravity.CENTER
+            label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+            val labelParams = LinearLayout.LayoutParams(
+                TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, barWidthDp.toFloat(), resources.displayMetrics).toInt(),
+                LinearLayout.LayoutParams.WRAP_CONTENT
+            )
+            labelParams.setMargins(
+                TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, barMarginDp.toFloat(), resources.displayMetrics).toInt(),
+                0,
+                TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, barMarginDp.toFloat(), resources.displayMetrics).toInt(),
+                0
+            )
+            label.layoutParams = labelParams
+            barChartXAxisLayout.addView(label)
         }
     }
 
