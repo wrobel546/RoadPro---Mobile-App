@@ -24,9 +24,6 @@ class MadeRoutesAdapter(
 
     inner class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val eventName: TextView = view.findViewById(R.id.eventNameTextView)
-        val eventLocation: TextView = view.findViewById(R.id.eventLocationTextView)
-        val eventFrom: TextView = view.findViewById(R.id.eventFrom)
-        val eventTo: TextView = view.findViewById(R.id.eventTo)
         val settingsButton: ImageButton = view.findViewById(R.id.settingsButton)
         val moneyButton: ImageButton = view.findViewById(R.id.moneyButton)
         val routeButton: Button = view.findViewById(R.id.routeButton)
@@ -34,7 +31,6 @@ class MadeRoutesAdapter(
         val paymentContainer: LinearLayout = view.findViewById(R.id.paymentContainer)
         val paymentValue: TextView = view.findViewById(R.id.paymentValue)
         val editPaymentButton: ImageButton = view.findViewById(R.id.editPaymentButton)
-        // Dodaj pole do wyświetlania liczby dni do wyjazdu
         val daysLeftTextView: TextView = view.findViewById(R.id.daysLeftTextView)
     }
 
@@ -46,11 +42,8 @@ class MadeRoutesAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val event = events[position]
         holder.eventName.text = event.name
-        holder.eventLocation.text = "Lokalizacja: ${event.location}"
-        holder.eventFrom.text = "Od: ${event.startDate}"
-        holder.eventTo.text = "Do: ${event.endDate}"
 
-        // Wyświetl ile dni do wyjazdu
+        // Wyświetl ile dni do wyjazdu w dedykowanym polu
         holder.daysLeftTextView.text = getDaysLeftText(event)
 
         // Kliknięcie w cały item - pokaż dialog z lokalizacją, datą wyjazdu i przyjazdu
