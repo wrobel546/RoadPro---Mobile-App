@@ -13,6 +13,10 @@ import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.*
+import android.widget.LinearLayout
+import android.graphics.Color
+import android.view.Gravity
+import android.util.TypedValue
 
 class StatisticFragment : Fragment() {
 
@@ -22,6 +26,7 @@ class StatisticFragment : Fragment() {
     private lateinit var yearTextView: TextView
     private lateinit var prevYearButton: ImageButton
     private lateinit var nextYearButton: ImageButton
+    private lateinit var barChartLayout: LinearLayout
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -49,6 +54,9 @@ class StatisticFragment : Fragment() {
             yearTextView.text = selectedYear.toString()
             loadProfitsForYear(selectedYear)
         }
+
+        // Dodaj wykres słupkowy pod RecyclerView
+        barChartLayout = view.findViewById(R.id.barChartLayout)
 
         loadProfitsForYear(selectedYear)
         return view
@@ -91,7 +99,36 @@ class StatisticFragment : Fragment() {
                 // Ustaw sumaryczny zysk roczny na dole
                 view?.findViewById<TextView>(R.id.yearTotalProfitTextView)?.text =
                     "Suma zysku: %.2f zł".format(totalProfit)
+
+                // Dodaj wykres słupkowy
+                drawBarChart(monthProfits)
             }
+    }
+
+    private fun drawBarChart(monthProfits: DoubleArray) {
+        barChartLayout.removeAllViews()
+        val maxProfit = monthProfits.maxOrNull()?.takeIf { it > 0 } ?: 1.0
+        val barWidthDp = 18
+        val barMarginDp = 4
+        val maxBarHeightDp = 100
+
+        for (i in 0..11) {
+            val bar = View(requireContext())
+            val barHeight = (monthProfits[i] / maxProfit * maxBarHeightDp).toInt()
+            val params = LinearLayout.LayoutParams(
+                TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, barWidthDp.toFloat(), resources.displayMetrics).toInt(),
+                TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, barHeight.toFloat(), resources.displayMetrics).toInt()
+            )
+            params.setMargins(
+                TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, barMarginDp.toFloat(), resources.displayMetrics).toInt(),
+                0,
+                TypedValue.applyDimension(TypedValue.COMPLEX_UNIT_DIP, barMarginDp.toFloat(), resources.displayMetrics).toInt(),
+                0
+            )
+            bar.layoutParams = params
+            bar.setBackgroundColor(Color.parseColor("#FFA726")) // pomarańczowy
+            barChartLayout.addView(bar)
+        }
     }
 
     data class MonthProfit(val month: String, val profit: Double, val percent: Double)
