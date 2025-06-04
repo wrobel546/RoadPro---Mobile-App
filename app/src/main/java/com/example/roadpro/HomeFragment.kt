@@ -96,9 +96,8 @@ class HomeFragment : Fragment() {
         totalDistanceTextView = view.findViewById(R.id.totalDistanceTextView)
         loadAndDisplayTotalDistance()
 
-        // Usuń lub zakomentuj poniższe linie, jeśli nie chcesz nadpisywać tekstu z XML:
-        // val gasStationsHeader = view.findViewById<TextView>(R.id.gasStationsHeader)
-        // gasStationsHeader.text = "Najbliższe stacje:"
+        val gasStationsHeader = view.findViewById<TextView>(R.id.gasStationsHeader)
+        gasStationsHeader.text = "Najbliższe stacje:"
     }
 
     private fun loadUserName() {
@@ -182,15 +181,19 @@ class HomeFragment : Fragment() {
                         }
                         // Sortuj po dystansie rosnąco
                         stations.sortBy { it.distanceKm }
-                        requireActivity().runOnUiThread {
-                            if (stations.isEmpty()) {
-                                Toast.makeText(requireContext(), "Brak stacji w promieniu 5 km!", Toast.LENGTH_SHORT).show()
+                        if (isAdded && activity != null) {
+                            activity?.runOnUiThread {
+                                if (stations.isEmpty()) {
+                                    Toast.makeText(requireContext(), "Brak stacji w promieniu 5 km!", Toast.LENGTH_SHORT).show()
+                                }
+                                gasStationsRecyclerView.adapter = GasStationAdapter(stations)
                             }
-                            gasStationsRecyclerView.adapter = GasStationAdapter(stations)
                         }
                     } catch (e: Exception) {
-                        requireActivity().runOnUiThread {
-                            Toast.makeText(requireContext(), "Błąd pobierania stacji: ${e.message}", Toast.LENGTH_LONG).show()
+                        if (isAdded && activity != null) {
+                            activity?.runOnUiThread {
+                                Toast.makeText(requireContext(), "Błąd pobierania stacji: ${e.message}", Toast.LENGTH_LONG).show()
+                            }
                         }
                     }
                 }

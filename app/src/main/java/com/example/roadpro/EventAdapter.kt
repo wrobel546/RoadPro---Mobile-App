@@ -6,12 +6,13 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import android.widget.ImageButton
+import androidx.appcompat.widget.AppCompatImageButton
 import androidx.recyclerview.widget.RecyclerView
 
 class EventAdapter(
     private var events: MutableList<Event>,
     private val onDeleteClicked: (Event) -> Unit,
-    private val onEditClicked: (Event) -> Unit // Dodaj callback do edycji
+    private val onEditClicked: (Event) -> Unit
 ) : RecyclerView.Adapter<EventAdapter.EventViewHolder>() {
 
     inner class EventViewHolder(view: View) : RecyclerView.ViewHolder(view) {
@@ -19,8 +20,8 @@ class EventAdapter(
         val eventLocation: TextView = view.findViewById(R.id.eventLocationTextView)
         val eventFrom: TextView = view.findViewById(R.id.eventFrom)
         val eventTo: TextView = view.findViewById(R.id.eventTo)
-        val deleteButton: Button = view.findViewById(R.id.deleteButton)
-        val editButton: ImageButton = view.findViewById(R.id.editButton) // Dodaj referencję do przycisku edycji
+        val deleteButton: AppCompatImageButton = view.findViewById(R.id.deleteButton)
+        val editButton: ImageButton = view.findViewById(R.id.editButton)
     }
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): EventViewHolder {
