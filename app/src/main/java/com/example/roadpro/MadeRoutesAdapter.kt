@@ -68,17 +68,28 @@ class MadeRoutesAdapter(
         holder.itemView.setOnClickListener {
             val context = holder.itemView.context
             val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_route_info, null)
-            val eventNameText = dialogView.findViewById<TextView>(R.id.eventNameTextView) // Dodaj ten wiersz
+            val eventNameText = dialogView.findViewById<TextView>(R.id.eventNameTextView)
             val locationText = dialogView.findViewById<TextView>(R.id.locationTextView)
             val dateText = dialogView.findViewById<TextView>(R.id.dateTextView)
             val mapView = dialogView.findViewById<MapView>(R.id.mapView)
             val distanceText = dialogView.findViewById<TextView>(R.id.distanceTextView)
             val routeButton = dialogView.findViewById<Button>(R.id.routeButton)
             val openInMapsButton = dialogView.findViewById<Button>(R.id.openInMapsButton)
+            val phoneText = dialogView.findViewById<TextView?>(R.id.phoneTextView)
 
-            eventNameText?.text = event.name // <-- ustaw nazwę wyjazdu w dialogu
+            eventNameText?.text = event.name
             locationText.text = event.location
             dateText.text = "Wyjazd: ${event.startDate}\nPowrót: ${event.endDate}"
+
+            // Wyświetl numer telefonu lub komunikat jeśli brak
+            val phoneNumber = event.phoneNumber
+            if (phoneText != null) {
+                phoneText.text = if (!phoneNumber.isNullOrBlank()) {
+                    "Telefon: $phoneNumber"
+                } else {
+                    "Telefon: nie wprowadzono"
+                }
+            }
 
             mapView.onCreate(null)
             mapView.onResume()
@@ -253,31 +264,14 @@ class MadeRoutesAdapter(
             holder.profitValue.text = "Zysk: %.2f zł".format(profit)
             holder.editPaymentButton.setOnClickListener {
                 val context = holder.itemView.context
-                val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_input_payment, null)
-                val input = dialogView.findViewById<EditText>(R.id.paymentEditText)
+                val input = EditText(context)
                 input.inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
                 input.setText((event.payment ?: 0.0).toString())
-                val dialog = AlertDialog.Builder(context)
-                    .setTitle("Podaj kwotę otrzymaną za przejazd")
-                    .setView(dialogView)
-                    .setPositiveButton("Zapisz", null) // obsługa ręczna
-                    .setNegativeButton("Anuluj", null)
-                    .create()
-
-                dialog.setOnShowListener {
-                    val saveBtn = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-                    val cancelBtn = dialog.getButton(AlertDialog.BUTTON_NEGATIVE)
-                    saveBtn.setTextColor(android.graphics.Color.BLACK)
-                    cancelBtn.setTextColor(android.graphics.Color.BLACK)
-                    saveBtn.setOnClickListener {
-                        val payment = input.text.toString().toDoubleOrNull()
-                        if (payment == null || payment <= 0.0) {
-                            input.setBackgroundColor(0x30FF0000) // półprzezroczysty czerwony
-                            Toast.makeText(context, "Podaj poprawną kwotę!", Toast.LENGTH_SHORT).show()
-                            return@setOnClickListener
-                        } else {
-                            input.setBackgroundColor(0x00000000) // reset tła
-                        }
+                val alert = AlertDialog.Builder(context)
+                    .setTitle("Edytuj kwotę za przejazd")
+                    .setView(input)
+                    .setPositiveButton("Zapisz") { _, _ ->
+                        val payment = input.text.toString().toDoubleOrNull() ?: 0.0
                         val db = FirebaseFirestore.getInstance()
                         db.collection("events")
                             .whereEqualTo("name", event.name)
@@ -287,19 +281,19 @@ class MadeRoutesAdapter(
                             .addOnSuccessListener { result ->
                                 for (document in result) {
                                     db.collection("events").document(document.id)
-                                        .update(mapOf("done" to 1, "payment" to payment))
+                                        .update("payment", payment)
                                 }
-                                (holder.itemView.context as? androidx.fragment.app.FragmentActivity)?.let { activity ->
-                                    val fragment = activity.supportFragmentManager.findFragmentById(R.id.frame_layout)
-                                    if (fragment is MadeRoutesFragment) {
-                                        fragment.reloadRoutes()
-                                    }
-                                }
-                                dialog.dismiss()
+                                event.payment = payment
+                                notifyItemChanged(position)
                             }
                     }
+                    .setNegativeButton("Anuluj", null)
+                    .create()
+                alert.setOnShowListener {
+                    alert.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(android.graphics.Color.BLACK)
+                    alert.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(android.graphics.Color.BLACK)
                 }
-                dialog.show()
+                alert.show()
             }
         } else {
             holder.doneButton.visibility = View.VISIBLE
@@ -334,14 +328,13 @@ class MadeRoutesAdapter(
                         return@setOnClickListener
                     }
                     val context = holder.itemView.context
-                    val dialogView = LayoutInflater.from(context).inflate(R.layout.dialog_input_payment, null)
-                    val input = dialogView.findViewById<EditText>(R.id.paymentEditText)
+                    val input = EditText(context)
                     input.inputType = android.text.InputType.TYPE_CLASS_NUMBER or android.text.InputType.TYPE_NUMBER_FLAG_DECIMAL
                     input.hint = "Kwota otrzymana za przejazd"
 
                     val dialog = AlertDialog.Builder(context)
                         .setTitle("Podaj kwotę otrzymaną za przejazd")
-                        .setView(dialogView)
+                        .setView(input)
                         .setPositiveButton("Zapisz", null) // obsługa ręczna
                         .setNegativeButton("Anuluj", null)
                         .create()

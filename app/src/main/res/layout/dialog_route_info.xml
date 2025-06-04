@@ -29,8 +29,15 @@
         android:id="@+id/dateTextView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Daty"
-        android:paddingBottom="8dp"/>
+        android:paddingBottom="8dp"
+        android:text="Daty" />
+
+    <TextView
+        android:id="@+id/phoneTextView"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Telefon: nie wprowadzono"
+        android:paddingTop="4dp"/>
 
     <com.google.android.gms.maps.MapView
         android:id="@+id/mapView"
