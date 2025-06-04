@@ -9,12 +9,20 @@ import android.widget.TextView
 import androidx.recyclerview.widget.RecyclerView
 import com.example.roadpro.R
 
+data class GasStationWithDistance(
+    val name: String,
+    val lat: Double,
+    val lng: Double,
+    val distanceKm: Double
+)
+
 class GasStationAdapter(
-    private val stations: List<GasStation>
+    private val stations: List<GasStationWithDistance>
 ) : RecyclerView.Adapter<GasStationAdapter.ViewHolder>() {
 
     class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {
         val nameText: TextView = view.findViewById(R.id.stationNameText)
+        val distanceText: TextView = view.findViewById(R.id.stationDistanceText)
         val navigateBtn: Button = view.findViewById(R.id.navigateBtn)
     }
 
@@ -27,6 +35,7 @@ class GasStationAdapter(
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val station = stations[position]
         holder.nameText.text = station.name
+        holder.distanceText.text = "Odległość: %.1f km".format(station.distanceKm)
         holder.navigateBtn.setOnClickListener {
             val uri = Uri.parse("google.navigation:q=${station.lat},${station.lng}")
             val intent = Intent(Intent.ACTION_VIEW, uri)

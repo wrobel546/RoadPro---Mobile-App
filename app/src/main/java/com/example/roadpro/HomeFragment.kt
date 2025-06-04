@@ -2,6 +2,7 @@ package com.example.roadpro
 
 import GasStation
 import GasStationAdapter
+import GasStationWithDistance
 import android.Manifest
 import android.app.AlertDialog
 import android.content.Intent
@@ -29,6 +30,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import org.json.JSONObject
+import java.net.URL
+import kotlin.concurrent.thread
 
 class HomeFragment : Fragment() {
 
@@ -80,7 +84,7 @@ class HomeFragment : Fragment() {
 
         // Inicjalizacja Places API
         if (!Places.isInitialized()) {
-            Places.initialize(requireContext().applicationContext, "TU_WSTAW_SWÓJ_KLUCZ_API")
+            Places.initialize(requireContext().applicationContext, "AIzaSyD_j8LMpiIq3ftvQJUzPprukkNTzp-CD7g")
         }
         placesClient = Places.createClient(requireContext())
 
@@ -91,6 +95,9 @@ class HomeFragment : Fragment() {
         // Dodaj inicjalizację TextView pod mapą
         totalDistanceTextView = view.findViewById(R.id.totalDistanceTextView)
         loadAndDisplayTotalDistance()
+
+        val gasStationsHeader = view.findViewById<TextView>(R.id.gasStationsHeader)
+        gasStationsHeader.text = "Najbliższe stacje:"
     }
 
     private fun loadUserName() {
@@ -142,33 +149,59 @@ class HomeFragment : Fragment() {
     private fun loadNearbyGasStations() {
         if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
             ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            Toast.makeText(requireContext(), "Brak uprawnień do lokalizacji!", Toast.LENGTH_SHORT).show()
             requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 101)
             return
         }
         fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
             if (location != null) {
-                val placeFields = listOf(
-                    com.google.android.libraries.places.api.model.Place.Field.NAME,
-                    com.google.android.libraries.places.api.model.Place.Field.LAT_LNG,
-                    com.google.android.libraries.places.api.model.Place.Field.TYPES
-                )
-                val request = FindCurrentPlaceRequest.newInstance(placeFields)
-                placesClient.findCurrentPlace(request)
-                    .addOnSuccessListener { response ->
-                        val stations = response.placeLikelihoods
-                            .mapNotNull { pl ->
-                                val place = pl.place
-                                if (place.types?.contains(com.google.android.libraries.places.api.model.Place.Type.GAS_STATION) == true && place.latLng != null) {
-                                    GasStation(place.name ?: "Stacja", place.latLng!!.latitude, place.latLng!!.longitude)
-                                } else null
+                val apiKey = "AIzaSyD_j8LMpiIq3ftvQJUzPprukkNTzp-CD7g"
+                val lat = location.latitude
+                val lng = location.longitude
+                val radius = 5000 // 5 km
+                val url = "https://maps.googleapis.com/maps/api/place/nearbysearch/json?location=$lat,$lng&radius=$radius&type=gas_station&key=$apiKey"
+                thread {
+                    try {
+                        val response = URL(url).readText()
+                        val json = JSONObject(response)
+                        val results = json.getJSONArray("results")
+                        val stations = mutableListOf<GasStationWithDistance>()
+                        for (i in 0 until results.length()) {
+                            val obj = results.getJSONObject(i)
+                            val name = obj.getString("name")
+                            val loc = obj.getJSONObject("geometry").getJSONObject("location")
+                            val stationLat = loc.getDouble("lat")
+                            val stationLng = loc.getDouble("lng")
+                            val resultsLocation = Location("").apply {
+                                latitude = stationLat
+                                longitude = stationLng
                             }
-                        gasStationsRecyclerView.adapter = GasStationAdapter(stations)
+                            val distance = location.distanceTo(resultsLocation) / 1000.0 // km
+                            stations.add(GasStationWithDistance(name, stationLat, stationLng, distance))
+                        }
+                        // Sortuj po dystansie rosnąco
+                        stations.sortBy { it.distanceKm }
+                        requireActivity().runOnUiThread {
+                            if (stations.isEmpty()) {
+                                Toast.makeText(requireContext(), "Brak stacji w promieniu 5 km!", Toast.LENGTH_SHORT).show()
+                            }
+                            gasStationsRecyclerView.adapter = GasStationAdapter(stations)
+                        }
+                    } catch (e: Exception) {
+                        requireActivity().runOnUiThread {
+                            Toast.makeText(requireContext(), "Błąd pobierania stacji: ${e.message}", Toast.LENGTH_LONG).show()
+                        }
                     }
+                }
+            } else {
+                Toast.makeText(requireContext(), "Nie można pobrać lokalizacji GPS!", Toast.LENGTH_SHORT).show()
             }
+        }.addOnFailureListener {
+            Toast.makeText(requireContext(), "Błąd pobierania lokalizacji!", Toast.LENGTH_SHORT).show()
         }
     }
 
-    // Dodaj tę funkcję do pobierania i wyświetlania sumy kilometrów
+    // Dodaj brakującą funkcję do sumowania kilometrów
     private fun loadAndDisplayTotalDistance() {
         val user = FirebaseAuth.getInstance().currentUser ?: return
         val db = FirebaseFirestore.getInstance()
@@ -185,18 +218,11 @@ class HomeFragment : Fragment() {
                         totalKm += (end - start)
                     }
                 }
-                totalDistanceTextView.text = "Łącznie przejechano: %.1f km".format(totalKm)
+                totalDistanceTextView.text = "Z aplikacją łącznie przejechano: %.1f km".format(totalKm)
             }
             .addOnFailureListener {
                 totalDistanceTextView.text = "Błąd ładowania kilometrów"
             }
-    }
-
-    override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
-        super.onRequestPermissionsResult(requestCode, permissions, grantResults)
-        if (requestCode == 101 && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            loadNearbyGasStations()
-        }
     }
 
     override fun onDestroyView() {
