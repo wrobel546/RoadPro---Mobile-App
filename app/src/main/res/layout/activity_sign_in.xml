@@ -3,7 +3,8 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:background="@color/white">
 
     <ImageView
         android:id="@+id/logoImage"
@@ -41,7 +42,7 @@
             android:scaleX="2"
             android:scaleY="2"
             android:src="@drawable/bus"
-            android:layout_marginTop="265dp"
+            android:layout_marginTop="270dp"
             app:layout_constraintTop_toTopOf="parent" />
 
         <com.google.android.material.textfield.TextInputLayout
@@ -64,7 +65,7 @@
                 style="@style/LoginTextInputOuterFieldStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Type Your Email"
+                android:hint="Podaj e-mail"
                 android:inputType="textEmailAddress" />
 
 
@@ -90,7 +91,7 @@
                 style="@style/LoginTextInputInnerFieldStyle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:hint="Type Your Password"
+                android:hint="Podaj hasło"
                 android:inputType="textPassword" />
 
 
@@ -114,36 +115,36 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
-            android:layout_marginTop="16dp"
+            app:layout_constraintBottom_toTopOf="@+id/textView"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/forgotPasswordBtn" />
+            app:layout_constraintTop_toBottomOf="@+id/button" />
 
         <androidx.appcompat.widget.AppCompatButton
             android:id="@+id/button"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginHorizontal="16dp"
-            android:background="@color/teal"
-            android:text="Sign in"
+            android:background="@drawable/rounded_button_bg"
+            android:text="Zaloguj się"
             android:textColor="@color/white"
             android:textStyle="bold"
-            app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintHorizontal_bias="0.5"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/g_SignIn" />
+            app:layout_constraintTop_toBottomOf="@+id/forgotPasswordBtn" />
 
         <TextView
             android:id="@+id/textView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Not Registered, Sign !"
+            android:text="Zarejestruj się!"
             android:textColor="@color/black"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@+id/button" />
+            android:padding="10dp"
+            android:layout_marginBottom="20dp"/>
 
 
     </androidx.constraintlayout.widget.ConstraintLayout>
