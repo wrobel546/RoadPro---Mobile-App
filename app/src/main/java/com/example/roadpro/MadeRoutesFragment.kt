@@ -195,6 +195,19 @@ class MadeRoutesFragment : Fragment() {
             val nameEdit = feeEditView.findViewById<EditText>(R.id.feeNameEditText)
             val amountEdit = feeEditView.findViewById<EditText>(R.id.feeAmountEditText)
 
+            // --- blokada emotek ---
+            val noEmojiFilter = android.text.InputFilter { source, _, _, _, _, _ ->
+                for (char in source) {
+                    val type = Character.getType(char)
+                    if (type == Character.SURROGATE.toInt() || type == Character.OTHER_SYMBOL.toInt()) {
+                        return@InputFilter ""
+                    }
+                }
+                null
+            }
+            nameEdit.filters = arrayOf(noEmojiFilter)
+            // --- koniec blokady emotek ---
+
             val addDialog = AlertDialog.Builder(requireContext())
                 .setTitle("Dodaj opłatę")
                 .setView(feeEditView)

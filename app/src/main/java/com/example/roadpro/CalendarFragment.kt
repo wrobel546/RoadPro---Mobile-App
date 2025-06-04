@@ -340,6 +340,21 @@ class CalendarFragment : Fragment() {
         endDateEdit.setText(event.endDate)
         phoneEdit?.setText(event.phoneNumber ?: "")
 
+        // --- blokada emotek ---
+        val noEmojiFilter = android.text.InputFilter { source, _, _, _, _, _ ->
+            for (char in source) {
+                val type = Character.getType(char)
+                if (type == Character.SURROGATE.toInt() || type == Character.OTHER_SYMBOL.toInt()) {
+                    return@InputFilter ""
+                }
+            }
+            null
+        }
+        nameEdit.filters = arrayOf(noEmojiFilter)
+        locationEdit.filters = arrayOf(noEmojiFilter)
+        phoneEdit?.filters = arrayOf(noEmojiFilter)
+        // --- koniec blokady emotek ---
+
         // Obsługa wyboru daty przez DatePicker
         startDateEdit.setOnClickListener {
             val cal = Calendar.getInstance()
@@ -347,9 +362,14 @@ class CalendarFragment : Fragment() {
             if (parts.size == 3) {
                 cal.set(parts[0].toInt(), parts[1].toInt() - 1, parts[2].toInt())
             }
-            DatePickerDialog(requireContext(), { _, y, m, d ->
+            val datePicker = DatePickerDialog(requireContext(), { _, y, m, d ->
                 startDateEdit.setText(String.format("%04d-%02d-%02d", y, m + 1, d))
-            }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
+            }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH))
+            datePicker.setOnShowListener {
+                datePicker.getButton(DatePickerDialog.BUTTON_POSITIVE)?.setTextColor(android.graphics.Color.BLACK)
+                datePicker.getButton(DatePickerDialog.BUTTON_NEGATIVE)?.setTextColor(android.graphics.Color.BLACK)
+            }
+            datePicker.show()
         }
         endDateEdit.setOnClickListener {
             val cal = Calendar.getInstance()
@@ -357,9 +377,14 @@ class CalendarFragment : Fragment() {
             if (parts.size == 3) {
                 cal.set(parts[0].toInt(), parts[1].toInt() - 1, parts[2].toInt())
             }
-            DatePickerDialog(requireContext(), { _, y, m, d ->
+            val datePicker = DatePickerDialog(requireContext(), { _, y, m, d ->
                 endDateEdit.setText(String.format("%04d-%02d-%02d", y, m + 1, d))
-            }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
+            }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH))
+            datePicker.setOnShowListener {
+                datePicker.getButton(DatePickerDialog.BUTTON_POSITIVE)?.setTextColor(android.graphics.Color.BLACK)
+                datePicker.getButton(DatePickerDialog.BUTTON_NEGATIVE)?.setTextColor(android.graphics.Color.BLACK)
+            }
+            datePicker.show()
         }
 
         val dialog = android.app.AlertDialog.Builder(requireContext())
@@ -372,10 +397,6 @@ class CalendarFragment : Fragment() {
         dialog.setOnShowListener {
             dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE)?.setTextColor(android.graphics.Color.BLACK)
             dialog.getButton(android.app.AlertDialog.BUTTON_NEGATIVE)?.setTextColor(android.graphics.Color.BLACK)
-        }
-        dialog.show()
-
-        dialog.setOnShowListener {
             val saveBtn = dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE)
             saveBtn.setOnClickListener {
                 val newName = nameEdit.text.toString().trim()

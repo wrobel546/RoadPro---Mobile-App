@@ -8,8 +8,6 @@ import android.text.TextWatcher
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.ArrayAdapter
-import android.widget.AutoCompleteTextView
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
@@ -20,27 +18,27 @@ import com.google.android.libraries.places.api.net.FindAutocompletePredictionsRe
 import com.google.android.libraries.places.api.net.PlacesClient
 import java.util.Calendar
 
-class AddEventDialog : DialogFragment() {
-    interface AddEventDialogListener {
-        fun onEventAdded(eventName: String, location: String, startDate: String, endDate: String, phoneNumber: String, sendSms: Boolean)
+class EditEventDialog : DialogFragment() {
+    interface EditEventDialogListener {
+        fun onEventUpdated(eventName: String, location: String, startDate: String, endDate: String, phoneNumber: String, sendSms: Boolean)
     }
 
-    private var listener: AddEventDialogListener? = null
+    private var listener: EditEventDialogListener? = null
 
-    fun setListener(listener: AddEventDialogListener) {
+    fun setListener(listener: EditEventDialogListener) {
         this.listener = listener
     }
 
     private lateinit var placesClient: PlacesClient
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
-        val view = requireActivity().layoutInflater.inflate(R.layout.fragment_add_event, null)
-        val locationEditText = view.findViewById<AutoCompleteTextView>(R.id.locationEditText)
+        val view = requireActivity().layoutInflater.inflate(R.layout.dialog_edit_event, null)
         val eventNameEditText = view.findViewById<EditText>(R.id.eventNameEditText)
+        val locationEditText = view.findViewById<EditText>(R.id.locationEditText)
+        val phoneEditText = view.findViewById<EditText>(R.id.phoneEditText)
         val startDateEditText = view.findViewById<EditText>(R.id.startDateEditText)
         val endDateEditText = view.findViewById<EditText>(R.id.endDateEditText)
         val saveButton = view.findViewById<Button>(R.id.saveButton)
-        val phoneEditText = view.findViewById<EditText>(R.id.phoneEditText)
         val sendSmsCheckBox = view.findViewById<android.widget.CheckBox>(R.id.sendSmsCheckBox)
 
         // Inicjalizacja Places API (tylko raz w aplikacji, najlepiej w Application, ale tu dla uproszczenia)
@@ -48,33 +46,6 @@ class AddEventDialog : DialogFragment() {
             Places.initialize(requireContext().applicationContext, "AIzaSyD_j8LMpiIq3ftvQJUzPprukkNTzp-CD7g")
         }
         placesClient = Places.createClient(requireContext())
-
-        val suggestions = ArrayList<String>()
-        val adapter = ArrayAdapter(requireContext(), android.R.layout.simple_dropdown_item_1line, suggestions)
-        locationEditText.setAdapter(adapter)
-        locationEditText.threshold = 1 // po ilu znakach zaczyna podpowiadać
-
-        locationEditText.addTextChangedListener(object : TextWatcher {
-            override fun beforeTextChanged(s: CharSequence?, start: Int, count: Int, after: Int) {}
-            override fun onTextChanged(s: CharSequence?, start: Int, before: Int, count: Int) {
-                val query = s?.toString() ?: ""
-                if (query.length < 2) return
-                val request = FindAutocompletePredictionsRequest.builder()
-                    .setQuery(query)
-                    .setTypeFilter(com.google.android.libraries.places.api.model.TypeFilter.CITIES)
-                    .build()
-                placesClient.findAutocompletePredictions(request)
-                    .addOnSuccessListener { response ->
-                        suggestions.clear()
-                        for (prediction: AutocompletePrediction in response.autocompletePredictions) {
-                            suggestions.add(prediction.getFullText(null).toString())
-                        }
-                        adapter.notifyDataSetChanged()
-                        locationEditText.showDropDown() // <-- pokaż listę rozwijaną po aktualizacji
-                    }
-            }
-            override fun afterTextChanged(s: Editable?) {}
-        })
 
         startDateEditText.setOnClickListener {
             val cal = Calendar.getInstance()
@@ -131,7 +102,7 @@ class AddEventDialog : DialogFragment() {
 
             if (!valid) return@setOnClickListener
 
-            listener?.onEventAdded(eventName, location, startDate, endDate, phoneNumber, sendSms)
+            listener?.onEventUpdated(eventName, location, startDate, endDate, phoneNumber, sendSms)
 
             dismiss()
         }
@@ -153,7 +124,7 @@ class AddEventDialog : DialogFragment() {
         // --- koniec blokady emotek ---
 
         val dialog = android.app.AlertDialog.Builder(requireContext())
-            .setTitle("Dodaj wydarzenie")
+            .setTitle("Edytuj wydarzenie")
             .setView(view)
             .setNegativeButton("Anuluj") { dialog, _ ->
                 dialog.dismiss()

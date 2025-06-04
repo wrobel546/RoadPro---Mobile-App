@@ -75,7 +75,7 @@ class MainActivity : AppCompatActivity() {
             .commit()
     }
 
-    // Dodaj tę metodę do MainActivity
+
     fun showAddEventDialog() {
         val addEventDialog = AddEventDialog()
         addEventDialog.setListener(object : AddEventDialog.AddEventDialogListener {
