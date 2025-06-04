@@ -2,12 +2,12 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
     <item
         android:id="@+id/home"
-        android:title="Home"
+        android:title="Profil"
         android:icon="@drawable/baseline_home_24"/>
 
     <item
         android:id="@+id/calendar"
-        android:title="Calendar"
+        android:title="Kalendarz"
         android:icon="@drawable/baseline_calendar_month_24"/>
 
     <item
@@ -17,11 +17,11 @@
 
     <item
         android:id="@+id/madeRoates"
-        android:title="Made routes"
+        android:title="Wyjazdy"
         android:icon="@drawable/baseline_add_task_24"/>
 
     <item
         android:id="@+id/statitics"
-        android:title="Statistics"
+        android:title="Statystyki"
         android:icon="@drawable/baseline_analytics_24"/>
 </menu>
