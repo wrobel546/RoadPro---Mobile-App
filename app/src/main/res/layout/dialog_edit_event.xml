@@ -31,4 +31,11 @@
         android:hint="Data przyjazdu (rrrr-mm-dd)"
         android:focusable="false"
         android:clickable="true" />
+
+    <EditText
+        android:id="@+id/editEventPhone"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Numer telefonu (opcjonalnie)"
+        android:inputType="phone" />
 </LinearLayout>

@@ -76,18 +76,37 @@ class MadeRoutesAdapter(
             val routeButton = dialogView.findViewById<Button>(R.id.routeButton)
             val openInMapsButton = dialogView.findViewById<Button>(R.id.openInMapsButton)
             val phoneText = dialogView.findViewById<TextView?>(R.id.phoneTextView)
+            // Dodaj przycisk "Wyślij wiadomość"
+            val sendSmsButton = dialogView.findViewById<Button?>(R.id.sendSmsButton)
 
             eventNameText?.text = event.name
             locationText.text = event.location
             dateText.text = "Wyjazd: ${event.startDate}\nPowrót: ${event.endDate}"
 
-            // Wyświetl numer telefonu lub komunikat jeśli brak
             val phoneNumber = event.phoneNumber
             if (phoneText != null) {
                 phoneText.text = if (!phoneNumber.isNullOrBlank()) {
                     "Telefon: $phoneNumber"
                 } else {
                     "Telefon: nie wprowadzono"
+                }
+            }
+
+            // Obsługa przycisku "Wyślij wiadomość"
+            sendSmsButton?.setOnClickListener {
+                if (!phoneNumber.isNullOrBlank()) {
+                    val smsText = "Informacja o wyjeździe: ${event.name}, miejsce: ${event.location}, od ${event.startDate} do ${event.endDate}"
+                    val smsIntent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
+                        data = android.net.Uri.parse("sms:$phoneNumber")
+                        putExtra("sms_body", smsText)
+                    }
+                    try {
+                        context.startActivity(smsIntent)
+                    } catch (e: Exception) {
+                        Toast.makeText(context, "Nie można otworzyć aplikacji SMS", Toast.LENGTH_SHORT).show()
+                    }
+                } else {
+                    Toast.makeText(context, "Brak numeru telefonu!", Toast.LENGTH_SHORT).show()
                 }
             }
 

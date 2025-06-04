@@ -331,11 +331,14 @@ class CalendarFragment : Fragment() {
         val locationEdit = dialogView.findViewById<EditText>(R.id.editEventLocation)
         val startDateEdit = dialogView.findViewById<EditText>(R.id.editEventStartDate)
         val endDateEdit = dialogView.findViewById<EditText>(R.id.editEventEndDate)
+        // Dodaj pole do edycji numeru telefonu
+        val phoneEdit = dialogView.findViewById<EditText?>(R.id.editEventPhone)
 
         nameEdit.setText(event.name)
         locationEdit.setText(event.location)
         startDateEdit.setText(event.startDate)
         endDateEdit.setText(event.endDate)
+        phoneEdit?.setText(event.phoneNumber ?: "")
 
         // Obsługa wyboru daty przez DatePicker
         startDateEdit.setOnClickListener {
@@ -379,6 +382,7 @@ class CalendarFragment : Fragment() {
                 val newLocation = locationEdit.text.toString().trim()
                 val newStart = startDateEdit.text.toString().trim()
                 val newEnd = endDateEdit.text.toString().trim()
+                val newPhone = phoneEdit?.text?.toString()?.trim() ?: ""
 
                 if (newName.isEmpty() || newLocation.isEmpty() || newStart.isEmpty() || newEnd.isEmpty()) {
                     Toast.makeText(requireContext(), "Wypełnij wszystkie pola!", Toast.LENGTH_SHORT).show()
@@ -432,7 +436,8 @@ class CalendarFragment : Fragment() {
                                                 "name" to newName,
                                                 "location" to newLocation,
                                                 "startDate" to newStart,
-                                                "endDate" to newEnd
+                                                "endDate" to newEnd,
+                                                "phoneNumber" to newPhone // <-- aktualizuj numer telefonu
                                             )
                                         )
                                 }
