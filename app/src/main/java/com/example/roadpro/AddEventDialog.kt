@@ -22,7 +22,7 @@ import java.util.Calendar
 
 class AddEventDialog : DialogFragment() {
     interface AddEventDialogListener {
-        fun onEventAdded(eventName: String, location: String, startDate: String, endDate: String)
+        fun onEventAdded(eventName: String, location: String, startDate: String, endDate: String, phoneNumber: String, sendSms: Boolean)
     }
 
     private var listener: AddEventDialogListener? = null
@@ -40,6 +40,8 @@ class AddEventDialog : DialogFragment() {
         val startDateEditText = view.findViewById<EditText>(R.id.startDateEditText)
         val endDateEditText = view.findViewById<EditText>(R.id.endDateEditText)
         val saveButton = view.findViewById<Button>(R.id.saveButton)
+        val phoneEditText = view.findViewById<EditText>(R.id.phoneEditText)
+        val sendSmsCheckBox = view.findViewById<android.widget.CheckBox>(R.id.sendSmsCheckBox)
 
         // Inicjalizacja Places API (tylko raz w aplikacji, najlepiej w Application, ale tu dla uproszczenia)
         if (!Places.isInitialized()) {
@@ -105,14 +107,31 @@ class AddEventDialog : DialogFragment() {
             val location = locationEditText.text.toString().trim()
             val startDate = startDateEditText.text.toString().trim()
             val endDate = endDateEditText.text.toString().trim()
+            val phoneNumber = phoneEditText.text.toString().trim()
+            val sendSms = sendSmsCheckBox.isChecked
+
+            var valid = true
 
             if (eventName.isEmpty() || location.isEmpty() || startDate.isEmpty() || endDate.isEmpty()) {
                 Toast.makeText(requireContext(), "Wypełnij wszystkie pola!", Toast.LENGTH_SHORT).show()
-                return@setOnClickListener
+                valid = false
             }
 
-            // TODO: Zapisz wydarzenie do bazy danych
-            listener?.onEventAdded(eventName, location, startDate, endDate)
+            // Sprawdź konflikt dat przez MainActivity
+            val conflict = (activity as? MainActivity)?.isDateConflict(startDate, endDate) == true
+            if (conflict) {
+                startDateEditText.setBackgroundColor(0x30FF0000) // półprzezroczysty czerwony
+                endDateEditText.setBackgroundColor(0x30FF0000)
+                Toast.makeText(requireContext(), "Wyjazd nakłada się z inną trasą!", Toast.LENGTH_LONG).show()
+                valid = false
+            } else {
+                startDateEditText.setBackgroundColor(0x00000000)
+                endDateEditText.setBackgroundColor(0x00000000)
+            }
+
+            if (!valid) return@setOnClickListener
+
+            listener?.onEventAdded(eventName, location, startDate, endDate, phoneNumber, sendSms)
 
             dismiss()
         }

@@ -79,7 +79,14 @@ class MainActivity : AppCompatActivity() {
     fun showAddEventDialog() {
         val addEventDialog = AddEventDialog()
         addEventDialog.setListener(object : AddEventDialog.AddEventDialogListener {
-            override fun onEventAdded(eventName: String, location: String, startDate: String, endDate: String) {
+            override fun onEventAdded(
+                eventName: String,
+                location: String,
+                startDate: String,
+                endDate: String,
+                phoneNumber: String,
+                sendSms: Boolean
+            ) {
                 // Sprawdź konflikt dat
                 if (isDateConflict(startDate, endDate)) {
                     Toast.makeText(this@MainActivity, "Wyjazd nakłada się z inną trasą!", Toast.LENGTH_LONG).show()
@@ -93,9 +100,9 @@ class MainActivity : AppCompatActivity() {
                     endDate = endDate,
                     color = color,
                     done = 0,
-                    payment = 0.0 // <-- dodaj ten argument, jeśli Event wymaga payment
+                    payment = 0.0
                 )
-                saveEventToFirestore(event)
+                saveEventToFirestore(event, phoneNumber, eventName, location, startDate, endDate, sendSms)
             }
         })
         addEventDialog.show(supportFragmentManager, "AddEventDialog")
@@ -111,7 +118,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     // Sprawdzenie konfliktu dat
-    private fun isDateConflict(newStart: String, newEnd: String): Boolean {
+    fun isDateConflict(newStart: String, newEnd: String): Boolean {
         val format = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
         val newStartDate = format.parse(newStart)
         val newEndDate = format.parse(newEnd)
@@ -119,7 +126,6 @@ class MainActivity : AppCompatActivity() {
             val start = format.parse(event.startDate)
             val end = format.parse(event.endDate)
             if (start != null && end != null && newStartDate != null && newEndDate != null) {
-                // Jeśli zakresy się nakładają
                 if (!(newEndDate.before(start) || newStartDate.after(end))) {
                     return true
                 }
@@ -129,7 +135,15 @@ class MainActivity : AppCompatActivity() {
     }
 
     // Zapisz wydarzenie do Firestore i odśwież listę
-    private fun saveEventToFirestore(event: Event) {
+    private fun saveEventToFirestore(
+        event: Event,
+        phoneNumber: String,
+        eventName: String,
+        location: String,
+        startDate: String,
+        endDate: String,
+        sendSms: Boolean
+    ) {
         val user = FirebaseAuth.getInstance().currentUser ?: return
         val eventRef = db.collection("events").document()
         val data = hashMapOf(
@@ -140,16 +154,29 @@ class MainActivity : AppCompatActivity() {
             "endDate" to event.endDate,
             "color" to event.color,
             "done" to 0,
-            "payment" to event.payment // <-- dodaj to pole, jeśli Event ma payment
+            "payment" to event.payment,
+            "phoneNumber" to phoneNumber
         )
         eventRef.set(data)
             .addOnSuccessListener {
                 Toast.makeText(this, "Wydarzenie zapisane!", Toast.LENGTH_SHORT).show()
                 eventList.add(event)
-                // Odśwież CalendarFragment jeśli jest widoczny
                 val currentFragment = supportFragmentManager.findFragmentById(R.id.frame_layout)
                 if (currentFragment is CalendarFragment) {
                     currentFragment.reloadEvents(eventList)
+                }
+                // Przekierowanie do aplikacji SMS tylko jeśli checkbox jest zaznaczony
+                if (sendSms && phoneNumber.isNotEmpty()) {
+                    val smsText = "Informacja o wyjeździe: $eventName, miejsce: $location, od $startDate do $endDate"
+                    val smsIntent = android.content.Intent(android.content.Intent.ACTION_VIEW).apply {
+                        setData(android.net.Uri.parse("sms:$phoneNumber"))
+                        putExtra("sms_body", smsText)
+                    }
+                    try {
+                        startActivity(smsIntent)
+                    } catch (e: Exception) {
+                        Toast.makeText(this, "Nie można otworzyć aplikacji SMS", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
             .addOnFailureListener { e ->

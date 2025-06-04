@@ -11,9 +11,12 @@ data class Event(
     val startDate: String = "",
     val endDate: String = "",
     val color: Int = 0,
-    var done: Int = 0, // 0 - nie zrealizowana, 1 - zrealizowana
-    val StartLicznik: Long = 0,
-    val KoniecLicznik: Long = 0,
-    val fees: List<Fee> = emptyList(),
-    var payment: Double = 0.0
-)
+    var done: Int? = null, // <- zmiana z String? na Int?
+    var payment: Double = 0.0,
+    val userId: String? = null,
+    val fees: List<Fee>? = null,
+    val StartLicznik: Long? = null,
+    val KoniecLicznik: Long? = null
+) {
+    constructor() : this("", "", "", "", 0, null, 0.0, null, null, null, null)
+}

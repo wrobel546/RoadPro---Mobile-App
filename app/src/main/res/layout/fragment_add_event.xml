@@ -20,6 +20,21 @@
         android:singleLine="true" />
 
     <EditText
+        android:id="@+id/phoneEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Numer telefonu (opcjonalnie)"
+        android:inputType="phone"
+        android:layout_marginTop="8dp" />
+
+    <CheckBox
+        android:id="@+id/sendSmsCheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Wyślij SMS z informacją o wyjeździe"
+        android:layout_marginTop="4dp" />
+
+    <EditText
         android:id="@+id/startDateEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
