@@ -88,6 +88,20 @@ class EditEventDialog : DialogFragment() {
                 valid = false
             }
 
+            // Nowa walidacja: startDate nie może być po endDate
+            val sdf = java.text.SimpleDateFormat("yyyy-MM-dd", java.util.Locale.getDefault())
+            val start: java.util.Date? = try { sdf.parse(startDate) } catch (e: Exception) { null }
+            val end: java.util.Date? = try { sdf.parse(endDate) } catch (e: Exception) { null }
+            if (start != null && end != null && start.after(end)) {
+                Toast.makeText(requireContext(), "Data rozpoczęcia musi być wcześniejsza lub równa dacie zakończenia!", Toast.LENGTH_LONG).show()
+                startDateEditText.setBackgroundColor(0x30FF0000)
+                endDateEditText.setBackgroundColor(0x30FF0000)
+                valid = false
+            } else {
+                startDateEditText.setBackgroundColor(0x00000000)
+                endDateEditText.setBackgroundColor(0x00000000)
+            }
+
             // Sprawdź konflikt dat przez MainActivity
             val conflict = (activity as? MainActivity)?.isDateConflict(startDate, endDate) == true
             if (conflict) {
@@ -95,7 +109,7 @@ class EditEventDialog : DialogFragment() {
                 endDateEditText.setBackgroundColor(0x30FF0000)
                 Toast.makeText(requireContext(), "Wyjazd nakłada się z inną trasą!", Toast.LENGTH_LONG).show()
                 valid = false
-            } else {
+            } else if (valid) {
                 startDateEditText.setBackgroundColor(0x00000000)
                 endDateEditText.setBackgroundColor(0x00000000)
             }

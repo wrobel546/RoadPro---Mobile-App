@@ -21,6 +21,16 @@ class MainActivity : AppCompatActivity() {
     private val db = FirebaseFirestore.getInstance()
     private val eventList = mutableListOf<Event>()
 
+    // Lista pastelowych fioletowych kolorów
+    private val pastelPurpleColors = listOf(
+        Color.parseColor("#B39DDB"), // jasny fiolet
+        Color.parseColor("#CE93D8"), // pastelowy fiolet
+        Color.parseColor("#D1C4E9"), // bardzo jasny fiolet
+        Color.parseColor("#E1BEE7"), // pastelowy różowo-fioletowy
+        Color.parseColor("#9575CD")  // ciemniejszy pastelowy fiolet
+    )
+    private var lastColorIndex = -1
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -92,7 +102,7 @@ class MainActivity : AppCompatActivity() {
                     Toast.makeText(this@MainActivity, "Wyjazd nakłada się z inną trasą!", Toast.LENGTH_LONG).show()
                     return
                 }
-                val color = generatePastelColor()
+                val color = generatePastelPurpleColor() // Użyj nowej funkcji
                 val event = Event(
                     name = eventName,
                     location = location,
@@ -108,13 +118,14 @@ class MainActivity : AppCompatActivity() {
         addEventDialog.show(supportFragmentManager, "AddEventDialog")
     }
 
-    // Dodaj tę funkcję do MainActivity
-    private fun generatePastelColor(): Int {
-        val hue = Random.nextInt(0, 360)
-        val saturation = 0.4f + Random.nextFloat() * 0.2f // 0.4-0.6
-        val value = 0.85f + Random.nextFloat() * 0.1f // 0.85-0.95
-        val hsv = floatArrayOf(hue.toFloat(), saturation, value)
-        return Color.HSVToColor(hsv)
+    // Funkcja losująca jeden z powyższych kolorów, nie powtarza dwa razy pod rząd
+    private fun generatePastelPurpleColor(): Int {
+        var idx: Int
+        do {
+            idx = Random.nextInt(pastelPurpleColors.size)
+        } while (idx == lastColorIndex && pastelPurpleColors.size > 1)
+        lastColorIndex = idx
+        return pastelPurpleColors[idx]
     }
 
     // Sprawdzenie konfliktu dat
@@ -195,7 +206,7 @@ class MainActivity : AppCompatActivity() {
                 for (document in result) {
                     val event = document.toObject(Event::class.java)
                     // Jeśli nie ma koloru (stare wydarzenia), przypisz losowy pastelowy
-                    val color = document.getLong("color")?.toInt() ?: generatePastelColor()
+                    val color = document.getLong("color")?.toInt() ?: generatePastelPurpleColor()
                     eventList.add(event.copy(color = color))
                 }
                 // Odśwież CalendarFragment jeśli jest widoczny

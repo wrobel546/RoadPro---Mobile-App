@@ -15,9 +15,9 @@ data class Event(
     var payment: Double = 0.0,
     val userId: String? = null,
     val fees: List<Fee>? = null,
-    val StartLicznik: Long? = null,
-    val KoniecLicznik: Long? = null,
+    val StartLicznik: Long = 0L, // domyślnie 0 zamiast null
+    val KoniecLicznik: Long = 0L, // domyślnie 0 zamiast null
     val phoneNumber: String? = null // <-- dodaj to pole
 ) {
-    constructor() : this("", "", "", "", 0, null, 0.0, null, null, null, null, null)
+    constructor() : this("", "", "", "", 0, null, 0.0, null, null, 0L, 0L, null)
 }
