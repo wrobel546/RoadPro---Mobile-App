@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <!-- ...existing styles... -->
+
+    <style name="FragmentBackground">
+        <item name="android:background">#F0F0F0</item>
+    </style>
+</resources>

@@ -1,158 +1,101 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/turquoise"
-    tools:context=".HomeFragment">
+    android:orientation="vertical"
+    tools:context=".HomeFragment"
+    android:layout_marginBottom="75dp">
 
-    <!-- TODO: Update blank fragment layout -->
+    <!-- Górna część: dane użytkownika i przyciski -->
+    <TextView
+        android:id="@+id/userNameTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Imię Nazwisko"
+        android:textColor="@color/black"
+        android:textSize="32sp"
+        android:textStyle="bold"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="32dp"/>
 
+    <TextView
+        android:id="@+id/emailEt"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="example@gmail.com"
+        android:textColor="@color/gray"
+        android:textSize="20sp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="8dp"/>
 
-    <androidx.constraintlayout.widget.ConstraintLayout
+    <ImageView
+        android:id="@+id/imageView"
+        android:layout_width="99dp"
+        android:layout_height="106dp"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="8dp"
+        android:adjustViewBounds="true"
+        android:background="@drawable/rounded_image"
+        android:clipToOutline="true"
+        android:maxWidth="150dp"
+        android:maxHeight="150dp"
+        android:scaleType="centerCrop"
+        android:src="@drawable/default_avatar" />
+
+    <Button
+        android:id="@+id/logoutBtn"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:backgroundTint="@color/gray"
+        android:text="Wyloguj"
+        android:textColor="@android:color/black"
+        android:layout_marginTop="8dp"/>
+
+    <androidx.appcompat.widget.AppCompatButton
+        android:id="@+id/accountSettingsBtn"
         android:layout_width="match_parent"
-        android:layout_height="match_parent">
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginEnd="32dp"
+        android:layout_marginTop="10dp"
+        android:layout_marginBottom="10dp"
+        android:background="@drawable/rounded_calendar_corner"
+        android:padding="10dp"
+        android:drawableStart="@drawable/baseline_settings_24"
+        android:text="Ustawienia konta" />
 
+    <!-- Sekcja stacji benzynowych -->
+    <TextView
+        android:id="@+id/gasStationsHeader"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="Najbliższe stacje paliw:  "
+        android:layout_marginLeft="7dp"
+        android:textColor="@color/black"
+        android:textStyle="bold"
+        android:textSize="20sp"
+        android:layout_marginTop="16dp"
+        android:layout_marginBottom="8dp"/>
 
-        <ScrollView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent">
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/gasStationsRecyclerView"
+        android:layout_width="match_parent"
+        android:layout_height="250dp"
+        android:overScrollMode="never"
+        android:background="@android:color/transparent"/>
 
+    <TextView
+        android:id="@+id/totalDistanceTextView"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:text="Z aplikacją łącznie przejechano: 0 km"
+        android:textAlignment="center"
+        android:textColor="@color/black"
+        android:textStyle="bold"
+        android:textSize="16sp"
+        android:layout_marginTop="20dp" />
 
-
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:orientation="vertical" >
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_marginTop="0px">
-
-                    <Button
-                        android:id="@+id/logoutBtn"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_gravity="center_horizontal"
-                        android:backgroundTint="@color/red"
-                        android:text="Wyloguj"
-                        android:textColor="@android:color/white"
-                        app:layout_constraintEnd_toEndOf="parent" />
-
-
-                    <ImageView
-                        android:id="@+id/imageView"
-                        android:layout_width="99dp"
-                        android:layout_height="106dp"
-                        android:layout_marginTop="75dp"
-                        android:adjustViewBounds="true"
-                        android:background="@drawable/rounded_image"
-                        android:clipToOutline="true"
-                        android:maxWidth="150dp"
-                        android:maxHeight="150dp"
-                        android:scaleType="centerCrop"
-                        android:src="@drawable/default_avatar"
-                        app:layout_constraintCircleRadius="50dp"
-                        app:layout_constraintDimensionRatio="1:1"
-                        app:layout_constraintEnd_toEndOf="parent"
-                        app:layout_constraintHeight_max="150dp"
-                        app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent"
-                        app:layout_constraintWidth_max="150dp" />
-
-                    <TextView
-                        android:id="@+id/userNameTextView"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:layout_marginTop="16dp"
-                        android:text="Imię Nazwisko"
-                        android:textColor="@color/black"
-                        android:textSize="32sp"
-                        android:textStyle="bold"
-                        app:layout_constraintEnd_toEndOf="@+id/imageView"
-                        app:layout_constraintStart_toStartOf="@+id/imageView"
-                        app:layout_constraintTop_toBottomOf="@+id/imageView" />
-
-                    <TextView
-                        android:id="@+id/emailEt"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="example@gmail.com"
-                        android:textColor="@color/gray"
-                        android:textSize="20sp"
-                        app:layout_constraintEnd_toEndOf="@+id/userNameTextView"
-                        app:layout_constraintStart_toStartOf="@+id/userNameTextView"
-                        app:layout_constraintTop_toBottomOf="@+id/userNameTextView" />
-
-                    <LinearLayout
-                        android:id="@+id/linearLayout2"
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical"
-                        app:layout_constraintTop_toBottomOf="@+id/emailEt">
-
-                        <androidx.appcompat.widget.AppCompatButton
-                            android:id="@+id/accountSettingsBtn"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:layout_marginStart="32dp"
-                            android:layout_marginTop="10dp"
-                            android:layout_marginEnd="32dp"
-                            android:layout_marginBottom="10dp"
-                            android:background="@drawable/rounded_calendar_corner"
-                            android:padding="10dp"
-                            android:drawableStart="@drawable/baseline_settings_24"
-                            android:text="Ustawienia konta" />
-                    </LinearLayout>
-
-                </androidx.constraintlayout.widget.ConstraintLayout>
-
-                <androidx.constraintlayout.widget.ConstraintLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent">
-
-                    <LinearLayout
-                        android:layout_width="match_parent"
-                        android:layout_height="match_parent"
-                        android:orientation="vertical"
-                        app:layout_constraintTop_toTopOf="parent"
-                        android:layout_marginTop="10dp">
-
-                    </LinearLayout>
-                </androidx.constraintlayout.widget.ConstraintLayout>
-
-                <TextView
-                    android:id="@+id/totalDistanceTextView"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Łącznie przejechano: 0 km"
-                    android:textAlignment="center"
-                    android:textStyle="bold"
-                    android:textSize="18sp"
-                    android:layout_marginTop="0dp"
-                    android:layout_marginBottom="8dp"/>
-
-                <TextView
-                    android:id="@+id/gasStationsHeader"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:text="Najbliższe stacje:"
-                    android:textStyle="bold"
-                    android:textSize="18sp"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginBottom="8dp"/>
-
-                <androidx.recyclerview.widget.RecyclerView
-                    android:id="@+id/gasStationsRecyclerView"
-                    android:layout_width="match_parent"
-                    android:layout_height="match_parent"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginBottom="130dp"/>
-
-            </LinearLayout>
-        </ScrollView>
-    </androidx.constraintlayout.widget.ConstraintLayout>
-
-</FrameLayout>
+</LinearLayout>

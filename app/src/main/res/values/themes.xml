@@ -4,19 +4,21 @@
         <!-- Customize your light theme here. -->
         <!-- <item name="colorPrimary">@color/my_light_primary</item> -->
 
-        <item name="colorPrimary">@color/turquoise</item>
-        <item name="colorPrimaryVariant">@color/turquoise</item>
+        <item name="colorPrimary">#F0F0F0</item>
+        <item name="colorPrimaryVariant">#F0F0F0</item>
         <item name="colorOnPrimary">@color/black</item>
 
-        <item name="colorSecondary">@color/teal</item>
-        <item name="colorSecondaryVariant">@color/teal</item>
+        <item name="colorSecondary">@color/gray</item>
+        <item name="colorSecondaryVariant">@color/gray</item>
         <item name="colorOnSecondary">@color/white</item>
 
         <item name="android:statusBarColor">?attr/colorPrimaryVariant</item>
 
     </style>
 
-    <style name="Theme.RoadPro" parent="Base.Theme.RoadPro" />
+    <style name="Theme.RoadPro" parent="Base.Theme.RoadPro">
+        <item name="android:windowBackground">#F0F0F0</item>
+    </style>
 
 
     <style name="LoginTextInputOuterFieldStyle" parent="Widget.MaterialComponents.TextInputLayout.OutlinedBox">

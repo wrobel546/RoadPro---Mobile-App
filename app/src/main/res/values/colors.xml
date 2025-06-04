@@ -8,8 +8,9 @@
     <color name="yellow">#FFFFFF00</color>
     <color name="cyan">#FF00FFFF</color>
     <color name="magenta">#FFFF00FF</color>
-    <color name="gray">#FF808080</color>
+    <color name="gray">#888888</color>
     <color name="light_gray">#FFD3D3D3</color>
+    <color name="gray_light">#9B9B9B</color>
     <color name="dark_gray">#FFA9A9A9</color>
     <color name="orange">#FFFFA500</color>
     <color name="purple">#FF800080</color>
@@ -26,7 +27,6 @@
     <color name="olive">#FF808000</color>
     <color name="coral">#FFFF7F50</color>
     <color name="salmon">#FFFA8072</color>
-    <color name="turquoise">#FF40E0D0</color>
     <color name="beige">#FFF5F5DC</color>
     <color name="ivory">#FFFFFFF0</color>
     <color name="khaki">#FFF0E68C</color>

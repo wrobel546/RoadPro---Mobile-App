@@ -96,8 +96,9 @@ class HomeFragment : Fragment() {
         totalDistanceTextView = view.findViewById(R.id.totalDistanceTextView)
         loadAndDisplayTotalDistance()
 
-        val gasStationsHeader = view.findViewById<TextView>(R.id.gasStationsHeader)
-        gasStationsHeader.text = "Najbliższe stacje:"
+        // Usuń lub zakomentuj poniższe linie, jeśli nie chcesz nadpisywać tekstu z XML:
+        // val gasStationsHeader = view.findViewById<TextView>(R.id.gasStationsHeader)
+        // gasStationsHeader.text = "Najbliższe stacje:"
     }
 
     private fun loadUserName() {
