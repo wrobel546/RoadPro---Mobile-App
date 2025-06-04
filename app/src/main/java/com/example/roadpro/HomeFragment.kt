@@ -1,5 +1,7 @@
 package com.example.roadpro
 
+import GasStation
+import GasStationAdapter
 import android.Manifest
 import android.app.AlertDialog
 import android.content.Intent
@@ -11,7 +13,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
-import android.widget.FrameLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
@@ -19,13 +20,6 @@ import androidx.fragment.app.Fragment
 import com.example.roadpro.databinding.FragmentHomeBinding
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.GoogleMap
-import com.google.android.gms.maps.OnMapReadyCallback
-import com.google.android.gms.maps.SupportMapFragment
-import com.google.android.gms.maps.model.BitmapDescriptorFactory
-import com.google.android.gms.maps.model.LatLng
-import com.google.android.gms.maps.model.MarkerOptions
 import com.google.android.libraries.places.api.Places
 import com.google.android.libraries.places.api.net.FindCurrentPlaceRequest
 import com.google.android.libraries.places.api.net.PlacesClient
@@ -33,6 +27,8 @@ import com.google.android.libraries.places.api.model.PlaceLikelihood
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
 
 class HomeFragment : Fragment() {
 
@@ -42,6 +38,8 @@ class HomeFragment : Fragment() {
     private lateinit var userNameTextView: TextView
     private lateinit var fusedLocationClient: FusedLocationProviderClient
     private lateinit var placesClient: PlacesClient
+    private lateinit var totalDistanceTextView: TextView
+    private lateinit var gasStationsRecyclerView: RecyclerView
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -86,24 +84,13 @@ class HomeFragment : Fragment() {
         }
         placesClient = Places.createClient(requireContext())
 
-        // Dodaj mapę do kontenera po id (nie używaj zmiennej mapContainer)
-        var mapFragment = childFragmentManager.findFragmentById(R.id.mapContainer) as? SupportMapFragment
-        if (mapFragment == null) {
-            mapFragment = SupportMapFragment.newInstance()
-            childFragmentManager.beginTransaction()
-                .replace(R.id.mapContainer, mapFragment)
-                .commitNow()
-        }
-        if (mapFragment == null) {
-            println("MapFragment is still null after commitNow!")
-        } else {
-            mapFragment.getMapAsync(object : OnMapReadyCallback {
-                override fun onMapReady(googleMap: GoogleMap) {
-                    showCurrentLocationOnMap(googleMap)
-                    showNearbyGasStations(googleMap)
-                }
-            })
-        }
+        gasStationsRecyclerView = view.findViewById(R.id.gasStationsRecyclerView)
+        gasStationsRecyclerView.layoutManager = LinearLayoutManager(requireContext())
+        loadNearbyGasStations()
+
+        // Dodaj inicjalizację TextView pod mapą
+        totalDistanceTextView = view.findViewById(R.id.totalDistanceTextView)
+        loadAndDisplayTotalDistance()
     }
 
     private fun loadUserName() {
@@ -152,30 +139,10 @@ class HomeFragment : Fragment() {
             .show()
     }
 
-    private fun showCurrentLocationOnMap(googleMap: GoogleMap) {
+    private fun loadNearbyGasStations() {
         if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
             ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // Poproś o uprawnienia jeśli nie są przyznane
             requestPermissions(arrayOf(Manifest.permission.ACCESS_FINE_LOCATION), 101)
-            return
-        }
-        googleMap.isMyLocationEnabled = true
-        fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
-            if (location != null) {
-                val currentLatLng = LatLng(location.latitude, location.longitude)
-                googleMap.clear()
-                // Usuń dodawanie markera (pinezki)
-                // googleMap.addMarker(MarkerOptions().position(currentLatLng).title("Twoja lokalizacja"))
-                googleMap.moveCamera(CameraUpdateFactory.newLatLngZoom(currentLatLng, 14f))
-            } else {
-                Toast.makeText(requireContext(), "Nie udało się pobrać lokalizacji", Toast.LENGTH_SHORT).show()
-            }
-        }
-    }
-
-    private fun showNearbyGasStations(googleMap: GoogleMap) {
-        if (ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED &&
-            ActivityCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
             return
         }
         fusedLocationClient.lastLocation.addOnSuccessListener { location: Location? ->
@@ -188,33 +155,47 @@ class HomeFragment : Fragment() {
                 val request = FindCurrentPlaceRequest.newInstance(placeFields)
                 placesClient.findCurrentPlace(request)
                     .addOnSuccessListener { response ->
-                        for (placeLikelihood: PlaceLikelihood in response.placeLikelihoods) {
-                            val place = placeLikelihood.place
-                            // Filtruj tylko stacje benzynowe
-                            if (place.types?.contains(com.google.android.libraries.places.api.model.Place.Type.GAS_STATION) == true) {
-                                val latLng = place.latLng
-                                if (latLng != null) {
-                                    googleMap.addMarker(
-                                        MarkerOptions()
-                                            .position(latLng)
-                                            .title(place.name)
-                                            .icon(BitmapDescriptorFactory.defaultMarker(BitmapDescriptorFactory.HUE_ORANGE))
-                                    )
-                                }
+                        val stations = response.placeLikelihoods
+                            .mapNotNull { pl ->
+                                val place = pl.place
+                                if (place.types?.contains(com.google.android.libraries.places.api.model.Place.Type.GAS_STATION) == true && place.latLng != null) {
+                                    GasStation(place.name ?: "Stacja", place.latLng!!.latitude, place.latLng!!.longitude)
+                                } else null
                             }
-                        }
+                        gasStationsRecyclerView.adapter = GasStationAdapter(stations)
                     }
             }
         }
     }
 
+    // Dodaj tę funkcję do pobierania i wyświetlania sumy kilometrów
+    private fun loadAndDisplayTotalDistance() {
+        val user = FirebaseAuth.getInstance().currentUser ?: return
+        val db = FirebaseFirestore.getInstance()
+        db.collection("events")
+            .whereEqualTo("userId", user.uid)
+            .whereEqualTo("done", 1)
+            .get()
+            .addOnSuccessListener { result ->
+                var totalKm = 0.0
+                for (doc in result) {
+                    val start = doc.getLong("StartLicznik")?.toDouble() ?: 0.0
+                    val end = doc.getLong("KoniecLicznik")?.toDouble() ?: 0.0
+                    if (end > start) {
+                        totalKm += (end - start)
+                    }
+                }
+                totalDistanceTextView.text = "Łącznie przejechano: %.1f km".format(totalKm)
+            }
+            .addOnFailureListener {
+                totalDistanceTextView.text = "Błąd ładowania kilometrów"
+            }
+    }
+
     override fun onRequestPermissionsResult(requestCode: Int, permissions: Array<out String>, grantResults: IntArray) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults)
         if (requestCode == 101 && grantResults.isNotEmpty() && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-            val mapFragment = childFragmentManager.findFragmentById(R.id.mapContainer) as? SupportMapFragment
-            mapFragment?.getMapAsync { googleMap ->
-                showCurrentLocationOnMap(googleMap)
-            }
+            loadNearbyGasStations()
         }
     }
 

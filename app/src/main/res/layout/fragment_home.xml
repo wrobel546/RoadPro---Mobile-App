@@ -19,6 +19,8 @@
             android:layout_width="match_parent"
             android:layout_height="match_parent">
 
+
+
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -27,29 +29,38 @@
                 <androidx.constraintlayout.widget.ConstraintLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent"
-                    android:background="@drawable/gradient_photobackground"
                     android:layout_marginTop="0px">
+
+                    <Button
+                        android:id="@+id/logoutBtn"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="center_horizontal"
+                        android:backgroundTint="@color/red"
+                        android:text="Wyloguj"
+                        android:textColor="@android:color/white"
+                        app:layout_constraintEnd_toEndOf="parent" />
 
 
                     <ImageView
                         android:id="@+id/imageView"
-                        android:layout_width="0dp"
-                        android:layout_height="0dp"
-                        android:maxHeight="150dp"
-                        android:maxWidth="150dp"
+                        android:layout_width="99dp"
+                        android:layout_height="106dp"
                         android:layout_marginTop="75dp"
+                        android:adjustViewBounds="true"
                         android:background="@drawable/rounded_image"
                         android:clipToOutline="true"
-                        android:src="@drawable/default_avatar"
-                        app:layout_constraintHeight_max="150dp"
-                        app:layout_constraintWidth_max="150dp"
-                        app:layout_constraintDimensionRatio="1:1"
+                        android:maxWidth="150dp"
+                        android:maxHeight="150dp"
                         android:scaleType="centerCrop"
-                        android:adjustViewBounds="true"
+                        android:src="@drawable/default_avatar"
                         app:layout_constraintCircleRadius="50dp"
+                        app:layout_constraintDimensionRatio="1:1"
                         app:layout_constraintEnd_toEndOf="parent"
+                        app:layout_constraintHeight_max="150dp"
                         app:layout_constraintStart_toStartOf="parent"
-                        app:layout_constraintTop_toTopOf="parent" />
+                        app:layout_constraintTop_toTopOf="parent"
+                        app:layout_constraintWidth_max="150dp" />
 
                     <TextView
                         android:id="@+id/userNameTextView"
@@ -69,7 +80,7 @@
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="example@gmail.com"
-                        android:textColor="@color/light_gray"
+                        android:textColor="@color/gray"
                         android:textSize="20sp"
                         app:layout_constraintEnd_toEndOf="@+id/userNameTextView"
                         app:layout_constraintStart_toStartOf="@+id/userNameTextView"
@@ -112,22 +123,24 @@
                     </LinearLayout>
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <FrameLayout
-                    android:id="@+id/mapContainer"
+                <androidx.recyclerview.widget.RecyclerView
+                    android:id="@+id/gasStationsRecyclerView"
                     android:layout_width="match_parent"
-                    android:layout_height="200dp"
-                    android:layout_marginTop="16dp"
-                    android:layout_gravity="center_horizontal" />
+                    android:layout_height="250dp"
+                    android:layout_marginTop="16dp"/>
 
-                <Button
-                    android:id="@+id/logoutBtn"
-                    android:layout_width="wrap_content"
+                <TextView
+                    android:id="@+id/totalDistanceTextView"
+                    android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Wyloguj"
-                    android:layout_gravity="center_horizontal"
-                    android:layout_marginTop="24dp"
-                    android:backgroundTint="@color/red"
-                    android:textColor="@android:color/white"/>
+                    android:text="Łącznie przejechano: 0 km"
+                    android:textAlignment="center"
+                    android:textStyle="bold"
+                    android:textSize="18sp"
+                    android:layout_marginTop="8dp"
+                    android:layout_marginBottom="8dp"/>
+
+
 
 
 
