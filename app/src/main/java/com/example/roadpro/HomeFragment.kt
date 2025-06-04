@@ -127,7 +127,7 @@ class HomeFragment : Fragment() {
             lastNameEdit.setText(doc.getString("lastName") ?: "")
         }
 
-        AlertDialog.Builder(requireContext())
+        val dialog = AlertDialog.Builder(requireContext())
             .setTitle("Account Settings")
             .setView(dialogView)
             .setPositiveButton("Zapisz") { _, _ ->
@@ -143,7 +143,13 @@ class HomeFragment : Fragment() {
                     }
             }
             .setNegativeButton("Anuluj", null)
-            .show()
+            .create()
+
+        dialog.setOnShowListener {
+            dialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(android.graphics.Color.BLACK)
+            dialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(android.graphics.Color.BLACK)
+        }
+        dialog.show()
     }
 
     private fun loadNearbyGasStations() {

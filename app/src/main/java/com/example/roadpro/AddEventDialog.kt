@@ -43,7 +43,7 @@ class AddEventDialog : DialogFragment() {
 
         // Inicjalizacja Places API (tylko raz w aplikacji, najlepiej w Application, ale tu dla uproszczenia)
         if (!Places.isInitialized()) {
-            Places.initialize(requireContext().applicationContext, "TWÓJ_KLUCZ_API")
+            Places.initialize(requireContext().applicationContext, "AIzaSyD_j8LMpiIq3ftvQJUzPprukkNTzp-CD7g")
         }
         placesClient = Places.createClient(requireContext())
 
@@ -68,6 +68,7 @@ class AddEventDialog : DialogFragment() {
                             suggestions.add(prediction.getFullText(null).toString())
                         }
                         adapter.notifyDataSetChanged()
+                        locationEditText.showDropDown() // <-- pokaż listę rozwijaną po aktualizacji
                     }
             }
             override fun afterTextChanged(s: Editable?) {}
@@ -75,18 +76,28 @@ class AddEventDialog : DialogFragment() {
 
         startDateEditText.setOnClickListener {
             val cal = Calendar.getInstance()
-            DatePickerDialog(requireContext(), { _, year, month, dayOfMonth ->
+            val datePicker = DatePickerDialog(requireContext(), { _, year, month, dayOfMonth ->
                 val dateStr = String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth)
                 startDateEditText.setText(dateStr)
-            }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
+            }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH))
+            datePicker.setOnShowListener {
+                datePicker.getButton(DatePickerDialog.BUTTON_POSITIVE)?.setTextColor(android.graphics.Color.BLACK)
+                datePicker.getButton(DatePickerDialog.BUTTON_NEGATIVE)?.setTextColor(android.graphics.Color.BLACK)
+            }
+            datePicker.show()
         }
 
         endDateEditText.setOnClickListener {
             val cal = Calendar.getInstance()
-            DatePickerDialog(requireContext(), { _, year, month, dayOfMonth ->
+            val datePicker = DatePickerDialog(requireContext(), { _, year, month, dayOfMonth ->
                 val dateStr = String.format("%04d-%02d-%02d", year, month + 1, dayOfMonth)
                 endDateEditText.setText(dateStr)
-            }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH)).show()
+            }, cal.get(Calendar.YEAR), cal.get(Calendar.MONTH), cal.get(Calendar.DAY_OF_MONTH))
+            datePicker.setOnShowListener {
+                datePicker.getButton(DatePickerDialog.BUTTON_POSITIVE)?.setTextColor(android.graphics.Color.BLACK)
+                datePicker.getButton(DatePickerDialog.BUTTON_NEGATIVE)?.setTextColor(android.graphics.Color.BLACK)
+            }
+            datePicker.show()
         }
 
         saveButton.setOnClickListener {
@@ -114,6 +125,9 @@ class AddEventDialog : DialogFragment() {
             }
             .create()
 
+        dialog.setOnShowListener {
+            dialog.getButton(android.app.AlertDialog.BUTTON_NEGATIVE)?.setTextColor(android.graphics.Color.BLACK)
+        }
         return dialog
     }
 }

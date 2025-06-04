@@ -121,6 +121,10 @@ class MadeRoutesFragment : Fragment() {
 
         dialog.setOnShowListener {
             val saveBtn = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            // USUŃ ustawianie koloru na czarny
+            // val cancelBtn = dialog.getButton(AlertDialog.BUTTON_NEGATIVE)
+            // saveBtn?.setTextColor(android.graphics.Color.BLACK)
+            // cancelBtn?.setTextColor(android.graphics.Color.BLACK)
             saveBtn.setOnClickListener {
                 val before = beforeEdit.text.toString().toLongOrNull() ?: 0L
                 val after = afterEdit.text.toString().toLongOrNull() ?: 0L
@@ -191,7 +195,7 @@ class MadeRoutesFragment : Fragment() {
             val nameEdit = feeEditView.findViewById<EditText>(R.id.feeNameEditText)
             val amountEdit = feeEditView.findViewById<EditText>(R.id.feeAmountEditText)
 
-            AlertDialog.Builder(requireContext())
+            val addDialog = AlertDialog.Builder(requireContext())
                 .setTitle("Dodaj opłatę")
                 .setView(feeEditView)
                 .setPositiveButton("Dodaj") { _, _ ->
@@ -205,10 +209,15 @@ class MadeRoutesFragment : Fragment() {
                     }
                 }
                 .setNegativeButton("Anuluj", null)
-                .show()
+                .create()
+            addDialog.setOnShowListener {
+                addDialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(android.graphics.Color.BLACK)
+                addDialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(android.graphics.Color.BLACK)
+            }
+            addDialog.show()
         }
 
-        AlertDialog.Builder(requireContext())
+        val mainDialog = AlertDialog.Builder(requireContext())
             .setTitle("Opłaty")
             .setView(dialogView)
             .setPositiveButton("Zapisz") { _, _ ->
@@ -228,7 +237,12 @@ class MadeRoutesFragment : Fragment() {
                     }
             }
             .setNegativeButton("Anuluj", null)
-            .show()
+            .create()
+        mainDialog.setOnShowListener {
+            mainDialog.getButton(AlertDialog.BUTTON_POSITIVE)?.setTextColor(android.graphics.Color.BLACK)
+            mainDialog.getButton(AlertDialog.BUTTON_NEGATIVE)?.setTextColor(android.graphics.Color.BLACK)
+        }
+        mainDialog.show()
     }
 }
 

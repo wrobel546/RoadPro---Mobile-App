@@ -4,7 +4,7 @@
     <string name="hello_blank_fragment">Hello blank fragment</string>
     <string name="web_client_id">1059698955611-66sj3nqhnbgmf55rt7frmckv6234cbif.apps.googleusercontent.com</string>
     <string name="title_activity_compose_calendar">ComposeCalendar</string>
-
+    
     <string-array name="months">
         <item>Styczeń</item>
         <item>Luty</item>

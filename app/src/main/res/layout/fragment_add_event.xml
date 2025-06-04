@@ -9,7 +9,7 @@
         android:id="@+id/eventNameEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Event Name" />
+        android:hint="Nazwa wydarzenia" />
 
     <AutoCompleteTextView
         android:id="@+id/locationEditText"
@@ -23,7 +23,7 @@
         android:id="@+id/startDateEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Start Date (YYYY-MM-DD)"
+        android:hint="Data wyjazdu"
         android:focusable="false"
         android:clickable="true" />
 
@@ -31,7 +31,7 @@
         android:id="@+id/endDateEditText"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="End Date (YYYY-MM-DD)"
+        android:hint="Data powrotu"
         android:focusable="false"
         android:clickable="true" />
 
@@ -40,5 +40,5 @@
         android:id="@+id/saveButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Save" />
+        android:text="Zapisz" />
 </LinearLayout>

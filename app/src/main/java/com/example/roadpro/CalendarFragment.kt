@@ -280,7 +280,12 @@ class CalendarFragment : Fragment() {
             dialog.dismiss()
         }
 
-        builder.create().show()
+        val dialog = builder.create()
+        dialog.setOnShowListener {
+            dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE)?.setTextColor(android.graphics.Color.BLACK)
+            dialog.getButton(android.app.AlertDialog.BUTTON_NEGATIVE)?.setTextColor(android.graphics.Color.BLACK)
+        }
+        dialog.show()
     }
 
     private fun deleteEventFromFirestore(event: Event) {
@@ -360,6 +365,12 @@ class CalendarFragment : Fragment() {
             .setPositiveButton("Zapisz", null)
             .setNegativeButton("Anuluj", null)
             .create()
+
+        dialog.setOnShowListener {
+            dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE)?.setTextColor(android.graphics.Color.BLACK)
+            dialog.getButton(android.app.AlertDialog.BUTTON_NEGATIVE)?.setTextColor(android.graphics.Color.BLACK)
+        }
+        dialog.show()
 
         dialog.setOnShowListener {
             val saveBtn = dialog.getButton(android.app.AlertDialog.BUTTON_POSITIVE)
