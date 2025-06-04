@@ -24,7 +24,6 @@
         android:id="@+id/deleteFeeButton"
         android:layout_width="32dp"
         android:layout_height="32dp"
-        android:src="@android:drawable/ic_menu_delete"
-        android:background="?attr/selectableItemBackgroundBorderless"
+        android:background="@drawable/baseline_delete_24"
         android:contentDescription="Usuń opłatę" />
 </LinearLayout>

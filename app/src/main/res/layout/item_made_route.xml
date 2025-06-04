@@ -19,7 +19,8 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:text="Nazwa wydarzenia"
-            android:textSize="18sp"
+            android:textColor="@color/black"
+            android:textSize="20sp"
             android:textStyle="bold"
             android:gravity="start" />
 
@@ -91,8 +92,7 @@
             android:id="@+id/moneyButton"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_menu_save"
+            android:background="@drawable/baseline_attach_money_24"
             android:contentDescription="Opłaty"
             android:layout_marginEnd="8dp" />
 
@@ -100,8 +100,7 @@
             android:id="@+id/settingsButton"
             android:layout_width="40dp"
             android:layout_height="40dp"
-            android:background="?attr/selectableItemBackgroundBorderless"
-            android:src="@android:drawable/ic_menu_manage"
+            android:background="@drawable/baseline_directions_bus_24"
             android:contentDescription="Ustaw przebieg" />
 
         <View
@@ -155,9 +154,8 @@
                     android:layout_width="32dp"
                     android:layout_height="32dp"
                     android:layout_marginStart="8dp"
-                    android:background="?attr/selectableItemBackgroundBorderless"
-                    android:contentDescription="Edytuj kwotę"
-                    android:src="@android:drawable/ic_menu_edit" />
+                    android:background="@drawable/baseline_edit_24"
+                    android:contentDescription="Edytuj kwotę" />
 
             </LinearLayout>
 
