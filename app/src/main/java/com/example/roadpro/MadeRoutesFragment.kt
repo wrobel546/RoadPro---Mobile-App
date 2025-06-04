@@ -122,9 +122,9 @@ class MadeRoutesFragment : Fragment() {
         dialog.setOnShowListener {
             val saveBtn = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
             // USUŃ ustawianie koloru na czarny
-            // val cancelBtn = dialog.getButton(AlertDialog.BUTTON_NEGATIVE)
-            // saveBtn?.setTextColor(android.graphics.Color.BLACK)
-            // cancelBtn?.setTextColor(android.graphics.Color.BLACK)
+             val cancelBtn = dialog.getButton(AlertDialog.BUTTON_NEGATIVE)
+             saveBtn?.setTextColor(android.graphics.Color.BLACK)
+             cancelBtn?.setTextColor(android.graphics.Color.BLACK)
             saveBtn.setOnClickListener {
                 val before = beforeEdit.text.toString().toLongOrNull() ?: 0L
                 val after = afterEdit.text.toString().toLongOrNull() ?: 0L

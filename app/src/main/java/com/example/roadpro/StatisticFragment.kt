@@ -27,7 +27,8 @@ class StatisticFragment : Fragment() {
     private lateinit var prevYearButton: ImageButton
     private lateinit var nextYearButton: ImageButton
     private lateinit var barChartLayout: LinearLayout
-    private lateinit var barChartXAxisLayout: LinearLayout // nowa linia
+    private lateinit var barChartXAxisLayout: LinearLayout
+    private lateinit var barChartYAxisLayout: LinearLayout // dodaj to pole
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -58,7 +59,8 @@ class StatisticFragment : Fragment() {
 
         // Dodaj wykres słupkowy pod RecyclerView
         barChartLayout = view.findViewById(R.id.barChartLayout)
-        barChartXAxisLayout = view.findViewById(R.id.barChartXAxisLayout) // nowa linia
+        barChartXAxisLayout = view.findViewById(R.id.barChartXAxisLayout)
+        barChartYAxisLayout = view.findViewById(R.id.barChartYAxisLayout) // znajdź layout osi Y
 
         loadProfitsForYear(selectedYear)
         return view
@@ -109,11 +111,33 @@ class StatisticFragment : Fragment() {
 
     private fun drawBarChart(monthProfits: DoubleArray) {
         barChartLayout.removeAllViews()
-        barChartXAxisLayout.removeAllViews() // czyść podpisy osi X
+        barChartXAxisLayout.removeAllViews()
+        barChartYAxisLayout.removeAllViews() // czyść etykiety osi Y
         val maxProfit = monthProfits.maxOrNull()?.takeIf { it > 0 } ?: 1.0
         val barWidthDp = 18
         val barMarginDp = 4
         val maxBarHeightDp = 100
+
+        // Dodaj dynamiczną oś Y (np. 5 poziomów)
+        val ySteps = 5
+        for (i in ySteps downTo 0) {
+            val yValue = maxProfit * i / ySteps
+            val label = TextView(requireContext())
+            label.text = String.format("%.0f", yValue)
+            label.setTextColor(Color.BLACK)
+            label.setTextSize(TypedValue.COMPLEX_UNIT_SP, 12f)
+            label.gravity = Gravity.END or Gravity.CENTER_VERTICAL
+            val labelParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                TypedValue.applyDimension(
+                    TypedValue.COMPLEX_UNIT_DIP,
+                    (maxBarHeightDp / ySteps.toFloat()),
+                    resources.displayMetrics
+                ).toInt()
+            )
+            label.layoutParams = labelParams
+            barChartYAxisLayout.addView(label)
+        }
 
         for (i in 0..11) {
             val bar = View(requireContext())
@@ -129,7 +153,7 @@ class StatisticFragment : Fragment() {
                 0
             )
             bar.layoutParams = params
-            bar.setBackgroundColor(Color.parseColor("#FFA726")) // pomarańczowy
+            bar.setBackgroundColor(Color.parseColor("#D0B6F6")) // pastelowy jasny fioletowy
             barChartLayout.addView(bar)
 
             // Dodaj podpis osi X (numer miesiąca)
@@ -169,6 +193,8 @@ class StatisticFragment : Fragment() {
             val item = items[position]
             holder.monthName.text = item.month
             holder.monthProfit.text = String.format("%.2f zł (%.1f%%)", item.profit, item.percent)
+            holder.monthName.setTextColor(Color.BLACK)
+            holder.monthProfit.setTextColor(Color.BLACK)
         }
         override fun getItemCount() = items.size
         class ViewHolder(view: View) : RecyclerView.ViewHolder(view) {

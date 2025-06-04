@@ -89,14 +89,27 @@
 
             <!-- Wykres słupkowy -->
             <LinearLayout
-                android:id="@+id/barChartLayout"
                 android:layout_width="match_parent"
-                android:layout_height="180dp"
+                android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="bottom|center"
-                android:layout_marginTop="8dp"
-                android:layout_marginBottom="0dp"
-                android:background="@drawable/rounded_calendar_corner" />
+                android:gravity="bottom"
+                android:padding="8dp">
+
+                <LinearLayout
+                    android:id="@+id/barChartYAxisLayout"
+                    android:layout_width="32dp"
+                    android:layout_height="100dp"
+                    android:orientation="vertical"
+                    android:gravity="end|bottom" />
+
+                <LinearLayout
+                    android:id="@+id/barChartLayout"
+                    android:layout_width="0dp"
+                    android:layout_height="100dp"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:gravity="bottom" />
+            </LinearLayout>
 
             <!-- Oś X wykresu (podpisy miesięcy) -->
             <LinearLayout
@@ -104,8 +117,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="horizontal"
-                android:gravity="center"
-                android:layout_marginBottom="8dp" />
+                android:gravity="center_horizontal" />
 
 
         </LinearLayout>
