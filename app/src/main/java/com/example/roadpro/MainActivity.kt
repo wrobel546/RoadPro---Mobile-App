@@ -221,4 +221,28 @@ class MainActivity : AppCompatActivity() {
     fun reloadEventsFromFirestore() {
         loadEventsFromFirestore()
     }
+
+    // Nowa funkcja do oznaczania wyjazdu jako zrealizowanego
+    fun markTripAsDone(event: Event, documentId: String) {
+        val db = FirebaseFirestore.getInstance()
+        val eventRef = db.collection("events").document(documentId)
+
+        // Pobierz istniejące fees z event (nie nadpisuj pustą listą!)
+        val data = hashMapOf(
+            "done" to 1,
+            "fees" to event.fees // <-- zachowaj istniejące opłaty!
+        )
+        eventRef.update(data as Map<String, Any>)
+            .addOnSuccessListener {
+                Toast.makeText(this, "Wyjazd oznaczony jako zrealizowany!", Toast.LENGTH_SHORT).show()
+                // Odśwież listę wyjazdów w odpowiednim fragmencie
+                val currentFragment = supportFragmentManager.findFragmentById(R.id.frame_layout)
+                if (currentFragment is MadeRoutesFragment) {
+                    reloadEventsFromFirestore()
+                }
+            }
+            .addOnFailureListener { e ->
+                Toast.makeText(this, "Błąd aktualizacji: ${e.message}", Toast.LENGTH_SHORT).show()
+            }
+    }
 }
