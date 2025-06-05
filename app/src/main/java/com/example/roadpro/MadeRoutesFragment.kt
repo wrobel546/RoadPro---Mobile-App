@@ -121,10 +121,9 @@ class MadeRoutesFragment : Fragment() {
 
         dialog.setOnShowListener {
             val saveBtn = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
-            // USUŃ ustawianie koloru na czarny
-             val cancelBtn = dialog.getButton(AlertDialog.BUTTON_NEGATIVE)
-             saveBtn?.setTextColor(android.graphics.Color.BLACK)
-             cancelBtn?.setTextColor(android.graphics.Color.BLACK)
+            val cancelBtn = dialog.getButton(AlertDialog.BUTTON_NEGATIVE)
+            saveBtn?.setTextColor(android.graphics.Color.BLACK)
+            cancelBtn?.setTextColor(android.graphics.Color.BLACK)
             saveBtn.setOnClickListener {
                 val before = beforeEdit.text.toString().toLongOrNull() ?: 0L
                 val after = afterEdit.text.toString().toLongOrNull() ?: 0L
@@ -145,16 +144,17 @@ class MadeRoutesFragment : Fragment() {
                     .get()
                     .addOnSuccessListener { result ->
                         for (document in result) {
-                            // Przygotuj dane do zapisania
-                            val feesToSave = feesList.map { mapOf("name" to it.name, "amount" to it.amount) }
+                            // Pobierz istniejące fees z dokumentu Firestore
+                            val existingFees = document.get("fees")
+                            val updateMap = mutableMapOf<String, Any>(
+                                "StartLicznik" to before,
+                                "KoniecLicznik" to after
+                            )
+                            if (existingFees != null) {
+                                updateMap["fees"] = existingFees
+                            }
                             db.collection("events").document(document.id)
-                                .update(
-                                    mapOf(
-                                        "StartLicznik" to before,
-                                        "KoniecLicznik" to after,
-                                        "fees" to feesToSave
-                                    )
-                                )
+                                .update(updateMap)
                         }
                         Toast.makeText(requireContext(), "Zapisano zmiany", Toast.LENGTH_SHORT).show()
                         reloadRoutes()
