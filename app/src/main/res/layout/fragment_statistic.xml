@@ -1,0 +1,125 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    tools:context=".StatisticFragment">
+
+    <TextView
+        android:id="@+id/statistics_title"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Zyski roczne"
+        android:gravity="center"
+        android:textSize="30sp"
+        android:textColor="@color/black"
+        android:textStyle="bold"
+        android:padding="16dp"/>
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:fillViewport="true"
+        android:clipToPadding="false"
+        android:layout_marginBottom="130dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:gravity="center"
+            android:padding="8dp">
+
+            <!-- Rok i przyciski zmiany roku -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center"
+                android:paddingBottom="8dp">
+
+                <ImageButton
+                    android:id="@+id/prevYearButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_arrow_left"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Poprzedni rok" />
+
+                <TextView
+                    android:id="@+id/yearTextView"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="2024"
+                    android:textSize="22sp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginEnd="16dp"
+                    android:textStyle="bold" />
+
+                <ImageButton
+                    android:id="@+id/nextYearButton"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:src="@drawable/ic_arrow_right"
+                    android:background="?attr/selectableItemBackgroundBorderless"
+                    android:contentDescription="Następny rok" />
+            </LinearLayout>
+
+            <!-- Suma zysku rocznego -->
+            <TextView
+                android:id="@+id/yearTotalProfitTextView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Suma zysku: 0.00 zł"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                android:gravity="center"
+                android:layout_marginTop="8dp"
+                android:layout_marginBottom="8dp" />
+
+            <!-- Lista miesięcy -->
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/monthsRecyclerView"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:nestedScrollingEnabled="false" />
+
+
+
+            <!-- Wykres słupkowy -->
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="bottom"
+                android:padding="8dp">
+
+                <LinearLayout
+                    android:id="@+id/barChartYAxisLayout"
+                    android:layout_width="32dp"
+                    android:layout_height="100dp"
+                    android:orientation="vertical"
+                    android:gravity="end|bottom" />
+
+                <LinearLayout
+                    android:id="@+id/barChartLayout"
+                    android:layout_width="0dp"
+                    android:layout_height="100dp"
+                    android:layout_weight="1"
+                    android:orientation="horizontal"
+                    android:gravity="bottom" />
+            </LinearLayout>
+
+            <!-- Oś X wykresu (podpisy miesięcy) -->
+            <LinearLayout
+                android:id="@+id/barChartXAxisLayout"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:gravity="center_horizontal" />
+
+
+        </LinearLayout>
+    </ScrollView>
+</LinearLayout>
